@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/ScrappingManagement.API/bin/Debug/net9.0
+/ScrappingManagement.API/obj
+/ScrappingManagement.API/Properties
