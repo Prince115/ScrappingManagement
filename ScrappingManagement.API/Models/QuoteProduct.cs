@@ -2,10 +2,10 @@
 
 namespace ScrappingManagement.API.Models
 {
-    public class ProductEntry
+    public class QuoteProduct
     {
         public int Id { get; set; }
-        public string Product { get; set; } = string.Empty;
+        public int ProductId { get; set; }
         public double LoadedWeight { get; set; }
         public double UnloadWeight { get; set; }
 
@@ -20,8 +20,8 @@ namespace ScrappingManagement.API.Models
 
         public double TotalAmount => NetWeight * Rate;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        [ForeignKey("CustomerTransactionId")]
-        public CustomerTransaction? CustomerTransaction { get; set; }
+        [ForeignKey("QuoteId")]
+        public Quote? Quotes { get; set; }
     }
 
 }

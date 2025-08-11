@@ -14,7 +14,7 @@ namespace ScrappingManagement.API.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         // Relationships
-        public ICollection<CustomerTransaction> Transactions { get; set; } = new List<CustomerTransaction>();
+        public ICollection<Quote> Quotes { get; set; } = new List<Quote>();
     }
 
 }

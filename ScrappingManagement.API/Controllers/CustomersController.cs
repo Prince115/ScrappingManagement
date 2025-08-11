@@ -21,7 +21,7 @@ namespace ScrappingManagement.API.Controllers
         public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
         {
             return await _context.Customers
-                .Include(c => c.Transactions) // Optional: include transactions
+                .Include(c => c.Quotes) // Optional: include transactions
                 .ToListAsync();
         }
 
@@ -30,8 +30,8 @@ namespace ScrappingManagement.API.Controllers
         public async Task<ActionResult<Customer>> GetCustomer(int id)
         {
             var customer = await _context.Customers
-                .Include(c => c.Transactions)
-                .ThenInclude(t => t.ProductEntries)
+                .Include(c => c.Quotes)
+                .ThenInclude(t => t.QuoteProducts)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (customer == null)
@@ -73,8 +73,8 @@ namespace ScrappingManagement.API.Controllers
         public async Task<IActionResult> DeleteCustomer(int id)
         {
             var customer = await _context.Customers
-                .Include(c => c.Transactions)
-                .ThenInclude(t => t.ProductEntries)
+                .Include(c => c.Quotes)
+                .ThenInclude(t => t.QuoteProducts)
                 .FirstOrDefaultAsync(c => c.Id == id);
 
             if (customer == null)

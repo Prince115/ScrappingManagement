@@ -7,14 +7,14 @@ namespace ScrappingManagement.API.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        public DbSet<ProductEntry> ProductEntries { get; set; }
+        public DbSet<QuoteProduct> QuoteProducts { get; set; }
         public DbSet<Customer> Customers { get; set; }
-        public DbSet<CustomerTransaction> CustomerTransactions { get; set; }
+        public DbSet<Quote> Quotes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Customer>()
-                .HasMany(c => c.Transactions)
+                .HasMany(c => c.Quotes)
                 .WithOne(t => t.Customer)
                 .HasForeignKey(t => t.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade); // optional

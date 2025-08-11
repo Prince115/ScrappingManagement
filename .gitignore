@@ -6,3 +6,5 @@
 /ScrappingManagement.API/bin/Debug/net9.0
 /ScrappingManagement.API/obj
 /ScrappingManagement.API/Properties
+ScrapeUI/node_modules/*
+ScrapeUI/package-lock.json

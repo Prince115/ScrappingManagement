@@ -13,6 +13,15 @@ namespace ScrappingManagement.API
 
             // Add services to the container.
 
+            // CORS setup
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend",
+                    policy => policy.AllowAnyOrigin()
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod());
+            });
+
             builder.Services.AddControllers();
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
@@ -46,8 +55,10 @@ namespace ScrappingManagement.API
 
             app.UseHttpsRedirection();
 
-            app.UseAuthorization();
+            // Use CORS before authorization
+            app.UseCors("AllowFrontend");
 
+            app.UseAuthorization();
 
             app.MapControllers();
 
