@@ -1,0 +1,271 @@
+@model ScrappingManagement.Web.Models.Quote
+@{
+    ViewData["Title"] = "Edit Quote";
+    var suppliers = ViewBag.Suppliers as List<ScrappingManagement.Web.Models.Supplier>;
+    var products = ViewBag.Products as List<ScrappingManagement.Web.Models.Product>;
+}
+
+<h2>Edit Quote</h2>
+
+<form asp-action="Edit" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <input type="hidden" asp-for="Id" />
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="SupplierId" class="form-label">Supplier</label>
+            <select asp-for="SupplierId" class="form-select" required>
+                <option value="">-- Select Supplier --</option>
+                @foreach (var supplier in suppliers)
+                {
+                    <option value="@supplier.Id">@supplier.Name</option>
+                }
+            </select>
+            <span asp-validation-for="SupplierId" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Location" class="form-label">Location</label>
+            <input asp-for="Location" class="form-control" required />
+            <span asp-validation-for="Location" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="Date" class="form-label">Date</label>
+            <input asp-for="Date" class="form-control" type="date" />
+            <span asp-validation-for="Date" class="text-danger"></span>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <label asp-for="BillNumber" class="form-label">Bill Number</label>
+            <input asp-for="BillNumber" class="form-control" readonly />
+            <span asp-validation-for="BillNumber" class="text-danger"></span>
+        </div>
+    </div>
+    <h4>Products</h4>
+    <div class="table-responsive">
+        <table class="table" id="productsTable">
+        <thead>
+            <tr>
+                <th>NO</th>
+                <th>Product</th>
+                <th>Loaded Weight</th>
+                <th>Unload Weight</th>
+                <th>Nos</th>
+                <th>Gross</th>
+                <th>Bora Count</th>
+                <th>Bora Report</th>
+                <th>Product Report</th>
+                <th>Net Weight</th>
+                <th>Rate</th>
+                <th>Total Amount</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.QuoteProducts != null)
+            {
+                var quoteProductsList = Model.QuoteProducts.ToList();
+                for (int i = 0; i < quoteProductsList.Count; i++)
+                {
+                    <tr>
+                        <td class="row-no">@(i + 1)</td>
+                        <td>
+                            <input type="hidden" name="quoteProducts[@i].Id" value="@quoteProductsList[i].Id" />
+                            <select name="quoteProducts[@i].ProductId" class="form-select productId" required>
+                                <option value="">-- Select --</option>
+                                @foreach (var product in products)
+                                {
+                                    <option value="@product.Id" selected="@(quoteProductsList[i].ProductId == product.Id)">@product.Name</option>
+                                }
+                            </select>
+                        </td>
+                        <td><input type="number" step="1" class="form-control loadedWeight" name="quoteProducts[@i].LoadedWeight" value="@quoteProductsList[i].LoadedWeight" /></td>
+                        <td><input type="number" step="1" class="form-control unloadWeight" name="quoteProducts[@i].UnloadWeight" value="@quoteProductsList[i].UnloadWeight" /></td>
+                        <td><input type="number" step="1" class="form-control nos" name="quoteProducts[@i].Nos" value="@quoteProductsList[i].Nos" /></td>
+                        <td><input type="number" step="1" class="form-control gross" name="quoteProducts[@i].Gross" value="@quoteProductsList[i].Gross" /></td>
+                        <td><input type="number" step="1" class="form-control boraCount" name="quoteProducts[@i].BoraCount" value="@quoteProductsList[i].BoraCount" /></td>
+                        <td><input type="number" step="0.1" class="form-control boraReport" name="quoteProducts[@i].BoraReport" value="@quoteProductsList[i].BoraReport" /></td>
+                        <td><input type="number" step="0.1" class="form-control productReport" name="quoteProducts[@i].ProductReport" value="@quoteProductsList[i].ProductReport" /></td>
+                        <td><input type="number" step="0.1" class="form-control netWeight" readonly name="quoteProducts[@i].NetWeight" value="@quoteProductsList[i].NetWeight" /></td>
+                        <td><input type="number" step="0.1" class="form-control rate" name="quoteProducts[@i].Rate" required value="@quoteProductsList[i].Rate" /></td>
+                        <td><input type="number" step="0.1" class="form-control totalAmount" readonly value="@quoteProductsList[i].TotalAmount" name="quoteProducts[@i].TotalAmount" /></td>
+                        <td><button type="button" class="btn btn-danger btn-sm removeRow">Delete</button></td>
+                    </tr>
+                }
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="10" class="text-end fw-bold">Total</td>
+                <td colspan="2">
+                    <input type="number" class="form-control" name="Total" id="Total" asp-for="Total" readonly />
+                </td>
+                <td></td>
+            </tr>
+        </tfoot>
+        </table>
+    </div>
+    <button type="button" class="btn btn-secondary" id="addProductBtn">Add Product</button>
+    <div class="mt-3 mb-2 text-end">
+        <label class="fw-bold me-2">Kato:</label>
+        <input type="number" class="form-control d-inline-block" style="width: 200px;" id="kato" asp-for="Kato" step="0.01" />
+    </div>
+    <div class="mt-3 mb-2 text-end">
+        <label class="fw-bold me-2">Grand Total:</label>
+        <input type="number" class="form-control d-inline-block" style="width: 200px;" id="grandTotal" asp-for="FinalTotal" readonly />
+    </div>
+    <div class="mt-3">
+        <button type="submit" class="btn btn-primary">Save Quote</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        var products = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(products));
+        var suppliers = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(suppliers));
+
+        function recalcRow(row) {
+            var loadedWeight = parseFloat(row.find('.loadedWeight').val()) || 0;
+            var unloadWeight = parseFloat(row.find('.unloadWeight').val()) || 0;
+            var nos = parseInt(row.find('.nos').val()) || 0;
+            var gross = loadedWeight - unloadWeight;
+            if (nos <= 0) {
+                row.find('.gross').val(gross.toFixed(2));
+            }
+            var boraCount = parseFloat(row.find('.boraCount').val()) || 0;
+            var boraReport = parseFloat(row.find('.boraReport').val()) || 0;
+            var productReport = parseFloat(row.find('.productReport').val()) || 0;
+            gross = parseFloat(row.find('.gross').val()) || 0;
+            var netWeight = gross - boraReport - productReport;
+            if (nos > 0) {
+                netWeight = nos * gross;
+            }
+            row.find('.netWeight').val(netWeight.toFixed(2));
+            var rate = parseFloat(row.find('.rate').val()) || 0;
+            var totalAmount = netWeight * rate;
+            row.find('.totalAmount').val(totalAmount.toFixed(2));
+            recalcGridTotal();
+        }
+
+        function recalcGridTotal() {
+            var sum = 0;
+            $('#productsTable tbody tr').each(function () {
+                var val = parseFloat($(this).find('.totalAmount').val()) || 0;
+                sum += val;
+            });
+            var floored = Math.floor(sum / 10) * 10;
+            $('#Total').val(floored.toFixed(2));
+            var kato = parseFloat($('#kato').val()) || 0;
+            var grandTotal = floored - kato;
+            $('#grandTotal').val(grandTotal.toFixed(0));
+        }
+
+        function isRowFilled(row) {
+            var productId = row.find('.productId').val();
+            var loadedWeight = row.find('.loadedWeight').val();
+            var unloadWeight = row.find('.unloadWeight').val();
+            var rate = row.find('.rate').val();
+            return productId && loadedWeight && unloadWeight && rate;
+        }
+
+        function addProductRow() {
+            var lastRow = $('#productsTable tbody tr').last();
+            if (lastRow.length && !isRowFilled(lastRow)) {
+                alert('Please fill all required fields in the last product row before adding a new one.');
+                return;
+            }
+            var rowIdx = $('#productsTable tbody tr').length;
+            var row = $('<tr>');
+            row.append($('<td class="row-no">').text(rowIdx + 1));
+            var productSelect = $('<select class="form-select productId" name="quoteProducts[' + rowIdx + '].ProductId" required>');
+            productSelect.append('<option value="">-- Select --</option>');
+            products.forEach(function (p) {
+                productSelect.append('<option value="' + p.Id + '">' + p.Name + '</option>');
+            });
+            row.append($('<td>').append(productSelect));
+            var loadedWeightValue = "";
+            if (lastRow.length) {
+                var prevUnload = lastRow.find('.unloadWeight').val();
+                if (prevUnload) {
+                    loadedWeightValue = prevUnload;
+                }
+            }
+            row.append($('<td>').append('<input type="number" step="1" class="form-control loadedWeight" name="quoteProducts[' + rowIdx + '].LoadedWeight" value="' + loadedWeightValue + '" />'));
+            row.append($('<td>').append('<input type="number" step="1" class="form-control unloadWeight" name="quoteProducts[' + rowIdx + '].UnloadWeight" />'));
+            row.append($('<td>').append('<input type="number" step="1" class="form-control nos" name="quoteProducts[' + rowIdx + '].Nos" />'));
+            row.append($('<td>').append('<input type="number" step="0.1" class="form-control gross" name="quoteProducts[' + rowIdx + '].Gross" />'));
+            row.append($('<td>').append('<input type="number" step="1" class="form-control boraCount" name="quoteProducts[' + rowIdx + '].BoraCount" value="0" />'));
+            row.append($('<td>').append('<input type="number" step="0.1" class="form-control boraReport" name="quoteProducts[' + rowIdx + '].BoraReport" value="0" />'));
+            row.append($('<td>').append('<input type="number" step="0.1" class="form-control productReport" name="quoteProducts[' + rowIdx + '].ProductReport" value="0" />'));
+            row.append($('<td>').append('<input type="number" step="0.1" class="form-control netWeight" readonly name="quoteProducts[' + rowIdx + '].NetWeight"/>'));
+            row.append($('<td>').append('<input type="number" step="0.1" class="form-control rate" name="quoteProducts[' + rowIdx + '].Rate" required />'));
+            row.append($('<td>').append('<input type="number" step="0.1" class="form-control totalAmount" name="quoteProducts[' + rowIdx + '].TotalAmount" readonly />'));
+            row.append($('<td>').append('<button type="button" class="btn btn-danger btn-sm removeRow">Delete</button>'));
+            $('#productsTable tbody').append(row);
+            if (loadedWeightValue) {
+                row.find('.loadedWeight').trigger('input');
+            }
+            updateRowNumbers();
+        }
+
+        function updateRowNumbers() {
+            $('#productsTable tbody tr').each(function (idx, tr) {
+                $(tr).find('.row-no').text(idx + 1);
+            });
+        }
+
+        $('#addProductBtn').on('click', addProductRow);
+
+        $('#kato').on('input', function () {
+            recalcGridTotal();
+        });
+
+        $('#SupplierId').on('change', function () {
+            var selectedId = $(this).val();
+            var supplier = suppliers.find(s => s.Id == selectedId);
+            if (supplier) {
+                $('#Location').val(supplier.Location || '');
+            } else {
+                $('#Location').val('');
+            }
+        });
+
+        $(document).on('change', '.productId', function () {
+            var selectedId = $(this).val();
+            const row = $(this).closest('tr');
+            var product = products.find(p => p.Id == selectedId);
+            if (product) {
+                row.find('.rate').val(product.Rate);
+            } else {
+                row.find('.rate').val('');
+            }
+            row.find('.rate').trigger('input');
+        });
+
+        $(document).on('change', '.loadedWeight, .unloadWeight, .boraCount, .boraReport, .nos, .gross, .productReport, .rate', function () {
+            recalcRow($(this).closest('tr'));
+        });
+
+        $(document).on('click', '.removeRow', function () {
+            const row = $(this).closest('tr');
+            row.remove();
+            updateRowNumbers();
+            recalcGridTotal();
+        });
+
+        $(document).ready(function () {
+            if (!$('#Date').val()) {
+                var today = new Date();
+                var yyyy = today.getFullYear();
+                var mm = String(today.getMonth() + 1).padStart(2, '0');
+                var dd = String(today.getDate()).padStart(2, '0');
+                var formatted = yyyy + '-' + mm + '-' + dd;
+                $('#Date').val(formatted);
+            }
+
+            if ($('#productsTable tbody tr').length === 0) {
+                addProductRow();
+            }
+        });
+    </script>
+}

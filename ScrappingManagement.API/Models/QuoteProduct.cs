@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
-
-namespace ScrappingManagement.API.Models
+﻿namespace ScrappingManagement.API.Models
 {
     public class QuoteProduct
     {
@@ -20,8 +18,6 @@ namespace ScrappingManagement.API.Models
 
         public double TotalAmount => NetWeight * Rate;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        [ForeignKey("QuoteId")]
-        public Quote? Quotes { get; set; }
     }
 
 }

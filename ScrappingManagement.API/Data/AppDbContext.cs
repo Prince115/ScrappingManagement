@@ -8,19 +8,13 @@ namespace ScrappingManagement.API.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<QuoteProduct> QuoteProducts { get; set; }
-        public DbSet<Customer> Customers { get; set; }
+        public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<Quote> Quotes { get; set; }
+        public DbSet<Product> Products { get; set; } 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Customer>()
-                .HasMany(c => c.Quotes)
-                .WithOne(t => t.Customer)
-                .HasForeignKey(t => t.CustomerId)
-                .OnDelete(DeleteBehavior.Cascade); // optional
-
             base.OnModelCreating(modelBuilder);
         }
     }
-
 }

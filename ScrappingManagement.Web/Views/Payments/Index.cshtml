@@ -1,0 +1,207 @@
+@model PaginatedList<ScrappingManagement.Web.Dto.PaymentDetailDto>
+@using ScrappingManagement.Web.Models
+@using Microsoft.AspNetCore.Mvc.Rendering
+@using ScrappingManagement.Web.Dto
+
+@{
+    ViewData["Title"] = "Payments";
+    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+
+    var currentSupplierFilter = ViewData["CurrentSupplierFilter"] as int?;
+    var currentPaymentModeFilter = ViewData["CurrentPaymentModeFilter"] as PaymentMode?;
+    var currentFromDateFilter = ViewData["CurrentFromDateFilter"] as string;
+    var currentToDateFilter = ViewData["CurrentToDateFilter"] as string;
+    var currentPageSize = ViewData["CurrentPageSize"] as int? ?? 20;
+}
+
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Payments</h2>
+    <p class="mb-0">
+        <a asp-action="Create" class="btn btn-primary">Create New</a>
+    </p>
+</div>
+
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="supplierId" class="control-label">Supplier</label>
+                <select name="supplierId" id="supplierId" class="form-control"
+                        asp-items='@(new SelectList(ViewBag.Suppliers, "Id", "Name", currentSupplierFilter))'>
+                    <option value="">All Suppliers</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <label for="paymentMode" class="control-label">Payment Mode</label>
+                <select name="paymentMode" id="paymentMode" class="form-control" asp-items="Html.GetEnumSelectList<PaymentMode>()">
+                    <option value="">All Modes</option>
+                </select>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label for="fromDate" class="control-label">From Date</label>
+                <input type="date" name="fromDate" id="fromDate" class="form-control" value="@currentFromDateFilter" />
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="form-group">
+                <label for="toDate" class="control-label">To Date</label>
+                <input type="date" name="toDate" id="toDate" class="form-control" value="@currentToDateFilter" />
+            </div>
+        </div>
+        <div class="col-md-2 text-center align-self-end">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a asp-action="Index" class="btn btn-secondary">Clear</a>
+        </div>
+    </div>
+</form>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.First().Id)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.First().Date)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.First().SupplierName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.First().PaymentMode)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.First().Amount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.First().Description)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Id)
+                </td>
+                <td>
+                    @item.Date.ToString("dd-MMMM-yyyy")
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.SupplierName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PaymentMode)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Amount)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-info">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="d-flex justify-content-center">
+    <nav aria-label="Quotes pagination">
+        <ul class="pagination">
+            <li class="page-item @prevDisabled">
+                <a asp-action="Index"
+                   asp-route-pageNumber="@(Model.PageIndex - 1)"
+                   asp-route-supplierId="@currentSupplierFilter"
+                   asp-route-fromDate="@currentFromDateFilter"
+                   asp-route-toDate="@currentToDateFilter"
+                   asp-route-pageSize="@currentPageSize"
+                   class="page-link">Previous</a>
+            </li>
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                    <a asp-action="Index"
+                       asp-route-pageNumber="@i"
+                       asp-route-supplierId="@currentSupplierFilter"
+                       asp-route-fromDate="@currentFromDateFilter"
+                       asp-route-toDate="@currentToDateFilter"
+                       asp-route-pageSize="@currentPageSize"
+                       class="page-link">@i</a>
+                </li>
+            }
+
+            <li class="page-item @nextDisabled">
+                <a asp-action="Index"
+                   asp-route-pageNumber="@(Model.PageIndex + 1)"
+                   asp-route-supplierId="@currentSupplierFilter"
+                   asp-route-fromDate="@currentFromDateFilter"
+                   asp-route-toDate="@currentToDateFilter"
+                   asp-route-pageSize="@currentPageSize"
+                   class="page-link">Next</a>
+            </li>
+            <li class="page-item d-flex align-items-center ms-3">
+                <label for="pageSize" class="form-label mb-0 me-2">Show:</label>
+                <select name="pageSize" id="pageSize" class="form-select form-select-sm auto-submit" style="width: auto;">
+                    <option value="5" selected="@(ViewData["CurrentPageSize"]?.ToString() == "5")">5</option>
+                    <option value="10" selected="@(ViewData["CurrentPageSize"]?.ToString() == "10")">10</option>
+                    <option value="20" selected="@(ViewData["CurrentPageSize"]?.ToString() == "20")">20</option>
+                    <option value="50" selected="@(ViewData["CurrentPageSize"]?.ToString() == "50")">50</option>
+                </select>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            $('#supplierId').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Select a Supplier',
+                allowClear: true,
+                width: 'resolve'
+            });
+
+            $('#paymentMode').select2({
+                theme: 'bootstrap-5',
+                placeholder: 'Select a Payment Mode',
+                allowClear: true,
+                width: 'resolve'
+            });
+
+            // Set initial values for Select2 dropdowns if filters are present
+            var currentSupplier = '@currentSupplierFilter';
+            if (currentSupplier) {
+                $('#supplierId').val(currentSupplier).trigger('change');
+            }
+
+            var currentPaymentMode = '@((int?)currentPaymentModeFilter)';
+            if (currentPaymentMode) {
+                $('#paymentMode').val(currentPaymentMode).trigger('change');
+            }
+
+            // Handle page size change
+            $('#pageSize').change(function () {
+                $(this).closest('form').submit();
+            });
+        });
+    </script>
+}

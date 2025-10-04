@@ -7,80 +7,75 @@ namespace ScrappingManagement.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CustomersController : ControllerBase
+    public class SuppliersController : ControllerBase
     {
         private readonly AppDbContext _context;
 
-        public CustomersController(AppDbContext context)
+        public SuppliersController(AppDbContext context)
         {
             _context = context;
         }
 
-        // GET: api/Customers
+        // GET: api/Suppliers
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Customer>>> GetCustomers()
+        public async Task<ActionResult<IEnumerable<Supplier>>> GetSuppliers()
         {
-            return await _context.Customers
-                .Include(c => c.Quotes) // Optional: include transactions
+            return await _context.Suppliers
                 .ToListAsync();
         }
 
-        // GET: api/Customers/5
+        // GET: api/Suppliers/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Customer>> GetCustomer(int id)
+        public async Task<ActionResult<Supplier>> GetSupplier(int id)
         {
-            var customer = await _context.Customers
-                .Include(c => c.Quotes)
-                .ThenInclude(t => t.QuoteProducts)
+            var Supplier = await _context.Suppliers
                 .FirstOrDefaultAsync(c => c.Id == id);
 
-            if (customer == null)
+            if (Supplier == null)
                 return NotFound();
 
-            return customer;
+            return Supplier;
         }
 
-        // POST: api/Customers
+        // POST: api/Suppliers
         [HttpPost]
-        public async Task<ActionResult<Customer>> AddCustomer(Customer customer)
+        public async Task<ActionResult<Supplier>> AddSupplier(Supplier Supplier)
         {
-            _context.Customers.Add(customer);
+            _context.Suppliers.Add(Supplier);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetCustomer), new { id = customer.Id }, customer);
+            return CreatedAtAction(nameof(GetSupplier), new { id = Supplier.Id }, Supplier);
         }
 
-        // PUT: api/Customers/5
+        // PUT: api/Suppliers/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCustomer(int id, Customer updatedCustomer)
+        public async Task<IActionResult> UpdateSupplier(int id, Supplier updatedSupplier)
         {
-            if (id != updatedCustomer.Id)
+            if (id != updatedSupplier.Id)
                 return BadRequest();
 
-            var existing = await _context.Customers.FindAsync(id);
+            var existing = await _context.Suppliers.FindAsync(id);
             if (existing == null)
                 return NotFound();
 
-            existing.Name = updatedCustomer.Name;
-            existing.Location = updatedCustomer.Location;
+            existing.Name = updatedSupplier.Name;
+            existing.Location = updatedSupplier.Location;
 
             await _context.SaveChangesAsync();
             return NoContent();
         }
 
-        // DELETE: api/Customers/5
+        // DELETE: api/Suppliers/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCustomer(int id)
+        public async Task<IActionResult> DeleteSupplier(int id)
         {
-            var customer = await _context.Customers
-                .Include(c => c.Quotes)
-                .ThenInclude(t => t.QuoteProducts)
+            var Supplier = await _context.Suppliers
                 .FirstOrDefaultAsync(c => c.Id == id);
 
-            if (customer == null)
+            if (Supplier == null)
                 return NotFound();
 
-            _context.Customers.Remove(customer);
+            _context.Suppliers.Remove(Supplier);
             await _context.SaveChangesAsync();
 
             return NoContent();

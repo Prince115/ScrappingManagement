@@ -8,3 +8,8 @@
 /ScrappingManagement.API/Properties
 ScrapeUI/node_modules/*
 ScrapeUI/package-lock.json
+/ScrappingManagement.API/bin/Release/net9.0
+/ScrappingManagement.API/ScrappingManagement.API.csproj.user
+/ScrappingManagement.Web/bin
+/ScrappingManagement.Web/obj
+/ScrappingManagement.Web/Properties

@@ -1,0 +1,101 @@
+/* Responsive Table Styles */
+
+/* Tablet responsive styles */
+@media (max-width: 1024px) and (min-width: 768px) {
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+    }
+    
+    .table {
+        min-width: 1000px;
+        font-size: 9pt;
+        margin-bottom: 0;
+    }
+    
+    .table th, .table td {
+        padding: 0.25rem !important;
+        white-space: nowrap;
+        vertical-align: middle;
+    }
+    
+    .table th:nth-child(2), .table td:nth-child(2) {
+        min-width: 120px;
+        white-space: normal;
+        word-wrap: break-word;
+        max-width: 150px;
+    }
+    
+    .table th:nth-child(1), .table td:nth-child(1) {
+        min-width: 30px;
+        text-align: center;
+    }
+    
+    .table th:nth-child(3), .table td:nth-child(3),
+    .table th:nth-child(4), .table td:nth-child(4),
+    .table th:nth-child(5), .table td:nth-child(5),
+    .table th:nth-child(6), .table td:nth-child(6),
+    .table th:nth-child(7), .table td:nth-child(7),
+    .table th:nth-child(8), .table td:nth-child(8),
+    .table th:nth-child(9), .table td:nth-child(9),
+    .table th:nth-child(10), .table td:nth-child(10),
+    .table th:nth-child(11), .table td:nth-child(11),
+    .table th:nth-child(12), .table td:nth-child(12),
+    .table th:nth-child(13), .table td:nth-child(13) {
+        min-width: 70px;
+        text-align: right;
+    }
+    
+    .table th:nth-child(13), .table td:nth-child(13) {
+        text-align: center;
+    }
+}
+
+/* Mobile responsive styles */
+@media (max-width: 767px) {
+    .container {
+        padding: 5px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+    }
+    
+    .table {
+        min-width: 900px;
+        font-size: 8pt;
+    }
+    
+    .table th, .table td {
+        padding: 0.2rem !important;
+        white-space: nowrap;
+    }
+    
+    .table th:nth-child(2), .table td:nth-child(2) {
+        min-width: 100px;
+        white-space: normal;
+        word-wrap: break-word;
+        max-width: 120px;
+    }
+    
+    .form-control {
+        font-size: 8pt;
+    }
+}
+
+/* Adjustments for Print.cshtml specific table (10 columns) */
+@media (max-width: 1024px) and (min-width: 768px) {
+    .table.print-table {
+        min-width: 800px; /* Smaller min-width for the print table */
+    }
+}
+@media (max-width: 767px) {
+    .table.print-table {
+        min-width: 700px; /* Even smaller min-width for the print table on mobile */
+    }
+}

@@ -1,0 +1,53 @@
+@model ScrappingManagement.Web.Dto.CreatePaymentDto
+
+@{
+    ViewData["Title"] = "Create Payment";
+    var suppliers = ViewBag.Suppliers as List<ScrappingManagement.Web.Models.Supplier>;
+    var paymentModes = ViewBag.PaymentModes as List<ScrappingManagement.Web.Models.PaymentMode>;
+}
+
+<h2>Create Payment</h2>
+
+<form asp-action="Create">
+    <div class="row">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="SupplierId" class="control-label"></label>
+            <select asp-for="SupplierId" class="form-control" asp-items="@(new SelectList(suppliers, "Id", "Name"))">
+                <option value="">-- Select Supplier --</option>
+            </select>
+            <span asp-validation-for="SupplierId" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="PaymentMode" class="control-label"></label>
+            <select asp-for="PaymentMode" class="form-control" asp-items="@(Html.GetEnumSelectList<ScrappingManagement.Web.Models.PaymentMode>())">
+                <option value="">-- Select Payment Mode --</option>
+            </select>
+            <span asp-validation-for="PaymentMode" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="Amount" class="control-label"></label>
+            <input asp-for="Amount" class="form-control" />
+            <span asp-validation-for="Amount" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="Date" class="control-label"></label>
+            <input asp-for="Date" class="form-control" type="date" />
+            <span asp-validation-for="Date" class="text-danger"></span>
+        </div>
+        <div class="col-md-12 mb-3">
+            <label asp-for="Description" class="control-label"></label>
+            <textarea asp-for="Description" class="form-control"></textarea>
+        </div>
+        <div class="col-12">
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

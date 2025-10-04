@@ -8,9 +8,9 @@ public class Quote
     public DateTime Date { get; set; } = DateTime.UtcNow;
     public string Location { get; set; } = string.Empty;
 
-    public int CustomerId { get; set; }
-    [ForeignKey("CustomerId")]
-    public Customer? Customer { get; set; }
+    public int SupplierId { get; set; }
+    [ForeignKey("SupplierId")]
+    public Supplier? Supplier { get; set; }
 
     public ICollection<QuoteProduct> QuoteProducts { get; set; } = new List<QuoteProduct>();
 

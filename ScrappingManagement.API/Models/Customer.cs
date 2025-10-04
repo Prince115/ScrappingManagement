@@ -2,7 +2,7 @@
 
 namespace ScrappingManagement.API.Models
 {
-    public class Customer
+    public class Supplier
     {
         public int Id { get; set; }
 
@@ -13,8 +13,6 @@ namespace ScrappingManagement.API.Models
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        // Relationships
-        public ICollection<Quote> Quotes { get; set; } = new List<Quote>();
     }
 
 }

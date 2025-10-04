@@ -1,0 +1,179 @@
+@model ScrappingManagement.Web.Dto.QuoteDetailDto
+
+@{
+    Layout = null;
+    ViewData["Title"] = "Print Quote";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 4px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 100%;
+        }
+
+       .half-page {
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .quote-info p {
+            margin-bottom: 0.4rem;
+        }
+
+        .quote-info .row > div {
+            display: flex;
+            gap: 10px;
+        }
+
+        .table th, .table td {
+            padding: 0.3rem !important;
+            font-size: 10pt;
+        }
+
+        textarea {
+            width: 100%;
+            resize: none;
+            height: 60px;
+            font-size: 10pt;
+            padding: 5px;
+        }
+
+        .totals-right {
+            text-align: right;
+        }
+
+        @@media print {
+            @@page {
+                size: A4 portrait;
+                margin: 5mm;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            .half-page {
+                max-height: 14.85cm;
+                box-sizing: border-box;
+                page-break-inside: avoid; /* Prevent mid-section splits */
+            }
+.half-page-fixed {
+        height: 14.85cm;
+        overflow: hidden;
+    }
+            .table th, .table td {
+                padding: 0.3rem !important;
+                font-size: 10pt;
+            }
+
+            p, td, th, div {
+                font-size: 10pt;
+            }
+
+            textarea {
+                border: 1px solid #000;
+            }
+        }
+    </style>
+</head>
+<body>
+@if (Model.Products != null && Model.Products.Any())
+        {
+var forceHalfPage =  Model.Products.Count <= 9;
+    <div class="container half-page @(forceHalfPage ? "half-page-fixed" : "")">
+        <!-- Quote Info: Two per line -->
+        <table style="width: 100%; font-size: 10pt; margin-bottom: 1rem;">
+            <tr>
+                <td><strong>Bill Number:</strong> @Model.BillNumber</td>
+                <td><strong>Supplier:</strong> @Model.SupplierName</td>
+            </tr>
+            <tr>
+                <td><strong>Date:</strong> @Model.Date.ToString("dd-MMMM-yyyy")</td>
+                <td><strong>Location:</strong> @Model.Location</td>
+            </tr>
+        </table>
+
+        
+            <table class="table table-bordered table-sm print-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Product</th>
+                        <th>Nos</th>
+                        <th>Gross</th>
+                        <th>Bora</th>
+                        <th>Bora Report</th>
+                        <th>Product Report</th>
+                        <th>Net Weight</th>
+                        <th>Rate</th>
+                        <th>Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < Model.Products.Count; i++)
+                    {
+                        var p = Model.Products[i];
+                        <tr>
+                            <td>@(i + 1)</td>
+                            <td>@p.ProductName</td>
+                            <td><span style="float: right;  text-align: right;">@p.Nos</span></td>
+                            <td><span style="float: right; min-width: 80px; text-align: right;">@p.Gross.ToString("0.00")</span></td>
+                            <td><span style="float:right; text-align: right;">@p.BoraCount</span></td>
+                            <td><span style="float: right; min-width: 80px; text-align: right;">@p.BoraReport.ToString("0.00")</span></td>
+                            <td><span style="float: right;  text-align: right;">@p.ProductReport.ToString("0.00")</span></td>
+                            <td><span style="float: right;  text-align: right;">@p.NetWeight.ToString("0.00")</span></td>
+                            <td><span style="float: right; text-align: right;">@p.Rate.ToString("0.00")</span></td>
+                            <td><span style="float: right; min-width: 80px; text-align: right;">@p.TotalAmount.ToString("0.00")</span></td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="9" class="text-end fw-bold">Total</td>
+                        <td class="fw-bold"><span style="float: right; min-width: 80px; text-align: right;">@Model.Total</span></td>
+                    </tr>
+                </tfoot>
+            </table>
+        
+        <table style="width: 100%; font-size: 10pt; margin-top: 1rem;">
+            <tr valign="top">
+                <td style="width: 60%; padding-right: 10px;">
+                    <p><strong>Note:</strong></p>
+                    <textarea class="form-control" style="width: 100%; height: 60px;"></textarea>
+                </td>
+
+                <!-- Kato & Final Total - 40% -->
+                <td style="width: 40%; text-align: right;">
+                    <p><strong>Kato (-):</strong> <span style="float: right; min-width: 80px; text-align: right;">@Model.Kato.ToString("0.00")</span></p>
+                    <p><strong>Final Total:</strong> <span style="float: right; min-width: 80px; text-align: right;">@Model.FinalTotal.ToString("0.00")</span></p>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+}
+        else
+        {
+            <p>No products found.</p>
+        }
+    <script>
+        window.onload = function () {
+            window.print();
+        };
+    </script>
+</body>
+</html>

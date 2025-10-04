@@ -1,0 +1,90 @@
+@model ScrappingManagement.Web.Dto.QuoteDetailDto
+
+@{
+    ViewData["Title"] = "Quote Details";
+    var grandTotal = Model.FinalTotal;
+}
+
+<h2>Quote Details</h2>
+
+<div class="mb-3">
+    <dl class="row">
+        <dt class="col-sm-2">No#</dt>
+        <dd class="col-sm-10">@Model.BillNumber</dd>
+        <dt class="col-sm-2">Date</dt>
+        <dd class="col-sm-10">@Model.Date.ToString("dd-MMMM-yyyy")</dd>
+        <dt class="col-sm-2">Location</dt>
+        <dd class="col-sm-10">@Model.Location</dd>
+        <dt class="col-sm-2">Supplier</dt>
+        <dd class="col-sm-10">@Model.SupplierName</dd>
+        <dt class="col-sm-2">Final Total</dt>
+        <dd class="col-sm-10">@Model.FinalTotal</dd>
+    </dl>
+</div>
+
+<h4>Products</h4>
+@if (Model.Products != null && Model.Products.Any())
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Product</th>
+                <th>Loaded Weight</th>
+                <th>Unload Weight</th>
+                <th>Nos</th>
+                <th>Gross</th>
+                <th>Bora Count</th>
+                <th>Bora Report</th>
+                <th>Product Report</th>
+                <th>Net Weight</th>
+                <th>Rate</th>
+                <th>Total Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Products.Count; i++)
+            {
+                var qp = Model.Products[i];
+                <tr>
+                    <td>@(i + 1)</td>
+                    <td>@(qp.ProductName)</td>
+                    <td>@qp.LoadedWeight</td>
+                    <td>@qp.UnloadWeight</td>
+                    <td>@qp.Nos</td>
+                    <td>@qp.Gross</td>
+                    <td>@qp.BoraCount</td>
+                    <td>@qp.BoraReport</td>
+                    <td>@qp.ProductReport</td>
+                    <td>@qp.NetWeight</td>
+                    <td>@qp.Rate</td>
+                    <td>@qp.TotalAmount.ToString("0")</td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="10" class="text-end fw-bold">Total</td>
+                <td colspan="2" class="fw-bold">@Model.Total</td>
+            </tr>
+        </tfoot>
+    </table>
+    <div class="mb-3">
+        <dl class="row">
+            <dt class="col-sm-2">Kato</dt>
+            <dd class="col-sm-10">@Model.Kato</dd>
+            <dt class="col-sm-2">Final Total</dt>
+            <dd class="col-sm-10">@grandTotal</dd>
+        </dl>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">No products found for this quote.</div>
+}
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">Edit</a>
+    <a asp-action="Print" asp-route-id="@Model?.Id" class="btn btn-info">Print</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+</div>

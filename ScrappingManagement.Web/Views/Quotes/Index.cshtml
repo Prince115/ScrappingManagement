@@ -1,0 +1,152 @@
+@model ScrappingManagement.Web.Dto.PaginatedList<ScrappingManagement.Web.Models.Quote>
+
+@{
+    ViewData["Title"] = "Quotes List";
+    var suppliers = ViewBag.Suppliers as List<ScrappingManagement.Web.Models.Supplier>;
+}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Quotes</h2>
+    <p class="mb-0">
+        <a asp-action="Create" class="btn btn-primary">Create New</a>
+    </p>
+</div>
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="row">
+        <div class="col-md-4">
+            <label for="supplierId" class="form-label">Supplier:</label>
+            <select name="supplierId" id="supplierId" class="form-select">
+                <option value="">All Suppliers</option>
+                @foreach (var supplier in suppliers)
+                {
+                    <option value="@supplier.Id" selected="@(ViewData["CurrentSupplierFilter"]?.ToString() == supplier.Id.ToString())">@supplier.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="fromDate" class="form-label">From Date:</label>
+            <input type="date" name="fromDate" id="fromDate" class="form-control" value="@ViewData["CurrentFromDateFilter"]" />
+        </div>
+        <div class="col-md-4">
+            <label for="toDate" class="form-label">To Date:</label>
+            <input type="date" name="toDate" id="toDate" class="form-control" value="@ViewData["CurrentToDateFilter"]" />
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-md-12 text-end">
+            <button type="submit" class="btn btn-info">Filter</button>
+            <a asp-action="Index" class="btn btn-secondary">Clear Filter</a>
+        </div>
+
+    </div>
+</form>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>No#</th>
+            <th>Date</th>
+            <th>Supplier</th>
+            <th>Location</th>
+            <th>Final Total</th>
+            <th>Products Count</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var quote in Model)
+        {
+            <tr>
+                <td>@quote.BillNumber</td>
+                <td>@quote.Date.ToString("dd-MMMM-yyyy")</td>
+                <td>@quote.Supplier?.Name</td>
+                <td>@quote.Location</td>
+                <td>@quote.FinalTotal</td>
+                <td>@quote.QuoteProducts.Count</td>
+                <td>
+                    <a asp-action="Print" asp-route-id="@quote.Id" target="_blank">Print</a> |
+                    <a asp-action="Details" asp-route-id="@quote.Id">Details</a> |
+                    <a asp-action="Edit" asp-route-id="@quote.Id">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@{
+    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+    var currentSupplier = ViewData["CurrentSupplierFilter"];
+    var currentFromDate = ViewData["CurrentFromDateFilter"];
+    var currentToDate = ViewData["CurrentToDateFilter"];
+    var currentPageSize = ViewData["CurrentPageSize"];
+}
+<div class="d-flex justify-content-center">
+    <nav aria-label="Quotes pagination">
+        <ul class="pagination">
+            <li class="page-item @prevDisabled">
+                <a asp-action="Index"
+                   asp-route-pageNumber="@(Model.PageIndex - 1)"
+                   asp-route-supplierId="@currentSupplier"
+                   asp-route-fromDate="@currentFromDate"
+                   asp-route-toDate="@currentToDate"
+                   asp-route-pageSize="@currentPageSize"
+                   class="page-link">Previous</a>
+            </li>
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.PageIndex ? "active" : "")">
+                    <a asp-action="Index"
+                       asp-route-pageNumber="@i"
+                       asp-route-supplierId="@currentSupplier"
+                       asp-route-fromDate="@currentFromDate"
+                       asp-route-toDate="@currentToDate"
+                       asp-route-pageSize="@currentPageSize"
+                       class="page-link">@i</a>
+                </li>
+            }
+
+            <li class="page-item @nextDisabled">
+                <a asp-action="Index"
+                   asp-route-pageNumber="@(Model.PageIndex + 1)"
+                   asp-route-supplierId="@currentSupplier"
+                   asp-route-fromDate="@currentFromDate"
+                   asp-route-toDate="@currentToDate"
+                   asp-route-pageSize="@currentPageSize"
+                   class="page-link">Next</a>
+            </li>
+            <li class="page-item d-flex align-items-center ms-3">
+                <label for="pageSize" class="form-label mb-0 me-2">Show:</label>
+                <select name="pageSize" id="pageSize" class="form-select form-select-sm auto-submit" style="width: auto;">
+                    <option value="5" selected="@(ViewData["CurrentPageSize"]?.ToString() == "5")">5</option>
+                    <option value="10" selected="@(ViewData["CurrentPageSize"]?.ToString() == "10")">10</option>
+                    <option value="20" selected="@(ViewData["CurrentPageSize"]?.ToString() == "20")">20</option>
+                    <option value="50" selected="@(ViewData["CurrentPageSize"]?.ToString() == "50")">50</option>
+                </select>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#supplierId').select2({
+                theme: 'bootstrap-5',
+                width: 'resolve'
+            });
+
+         //  $('#supplierId').next('.select2').find('.selection').addClass('form-control');
+          $('#pageSize').on('change', function() {
+               var newPageSize = $(this).val();
+               var currentUrl = new URL(window.location.href);
+
+               // Preserve existing query parameters
+               currentUrl.searchParams.set('pageSize', newPageSize);
+               currentUrl.searchParams.set('pageNumber', '1');
+
+               window.location.href = currentUrl.toString();
+          });
+        });
+    </script>
+}
