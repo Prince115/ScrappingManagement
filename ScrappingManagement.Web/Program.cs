@@ -18,8 +18,20 @@ namespace ScrappingManagement.Web
 			builder.Services.AddSwaggerGen();
 
 			builder.Services.AddTransient<WhatsAppInvoiceService>();
+			builder.Services.ConfigureApplicationCookie(options =>
+			{
+				options.ExpireTimeSpan = TimeSpan.FromDays(365);  
+				options.SlidingExpiration = true;  
+				options.LoginPath = "/Identity/Account/Login";  
+				options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+			});
 
-			// Configure AppDbContext
+			builder.Services.AddSession(options =>
+			{
+				options.IdleTimeout = TimeSpan.FromDays(365);
+				options.Cookie.HttpOnly = true;
+				options.Cookie.IsEssential = true;
+			});
 			var useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDatabase");
 
 			if (useInMemory)
@@ -93,6 +105,7 @@ namespace ScrappingManagement.Web
 
 			app.UseAuthentication();
 			app.UseAuthorization();
+			app.UseSession();
 
 			app.MapRazorPages();
 

@@ -37,8 +37,6 @@
             <input asp-for="Date" class="form-control" type="date" />
             <span asp-validation-for="Date" class="text-danger"></span>
         </div>
-    </div>
-    <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="BillNumber" class="form-label">Bill Number</label>
             <input asp-for="BillNumber" class="form-control" readonly />
@@ -48,65 +46,65 @@
     <h4>Products</h4>
     <div class="table-responsive">
         <table class="table" id="productsTable">
-        <thead>
-            <tr>
-                <th>NO</th>
-                <th>Product</th>
-                <th>Loaded Weight</th>
-                <th>Unload Weight</th>
-                <th>Nos</th>
-                <th>Gross</th>
-                <th>Bora Count</th>
-                <th>Bora Report</th>
-                <th>Product Report</th>
-                <th>Net Weight</th>
-                <th>Rate</th>
-                <th>Total Amount</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model.QuoteProducts != null)
-            {
-                var quoteProductsList = Model.QuoteProducts.ToList();
-                for (int i = 0; i < quoteProductsList.Count; i++)
+            <thead>
+                <tr>
+                    <th>NO</th>
+                    <th>Product</th>
+                    <th>Loaded Weight</th>
+                    <th>Unload Weight</th>
+                    <th>Nos</th>
+                    <th>Gross</th>
+                    <th>Bora Count</th>
+                    <th>Bora Report</th>
+                    <th>Product Report</th>
+                    <th>Net Weight</th>
+                    <th>Rate</th>
+                    <th>Total Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.QuoteProducts != null)
                 {
-                    <tr>
-                        <td class="row-no">@(i + 1)</td>
-                        <td>
-                            <input type="hidden" name="quoteProducts[@i].Id" value="@quoteProductsList[i].Id" />
-                            <select name="quoteProducts[@i].ProductId" class="form-select productId" required>
-                                <option value="">-- Select --</option>
-                                @foreach (var product in products)
-                                {
-                                    <option value="@product.Id" selected="@(quoteProductsList[i].ProductId == product.Id)">@product.Name</option>
-                                }
-                            </select>
-                        </td>
-                        <td><input type="number" step="1" class="form-control loadedWeight" name="quoteProducts[@i].LoadedWeight" value="@quoteProductsList[i].LoadedWeight" /></td>
-                        <td><input type="number" step="1" class="form-control unloadWeight" name="quoteProducts[@i].UnloadWeight" value="@quoteProductsList[i].UnloadWeight" /></td>
-                        <td><input type="number" step="1" class="form-control nos" name="quoteProducts[@i].Nos" value="@quoteProductsList[i].Nos" /></td>
-                        <td><input type="number" step="1" class="form-control gross" name="quoteProducts[@i].Gross" value="@quoteProductsList[i].Gross" /></td>
-                        <td><input type="number" step="1" class="form-control boraCount" name="quoteProducts[@i].BoraCount" value="@quoteProductsList[i].BoraCount" /></td>
-                        <td><input type="number" step="0.1" class="form-control boraReport" name="quoteProducts[@i].BoraReport" value="@quoteProductsList[i].BoraReport" /></td>
-                        <td><input type="number" step="0.1" class="form-control productReport" name="quoteProducts[@i].ProductReport" value="@quoteProductsList[i].ProductReport" /></td>
-                        <td><input type="number" step="0.1" class="form-control netWeight" readonly name="quoteProducts[@i].NetWeight" value="@quoteProductsList[i].NetWeight" /></td>
-                        <td><input type="number" step="0.1" class="form-control rate" name="quoteProducts[@i].Rate" required value="@quoteProductsList[i].Rate" /></td>
-                        <td><input type="number" step="0.1" class="form-control totalAmount" readonly value="@quoteProductsList[i].TotalAmount" name="quoteProducts[@i].TotalAmount" /></td>
-                        <td><button type="button" class="btn btn-danger btn-sm removeRow">Delete</button></td>
-                    </tr>
+                    var quoteProductsList = Model.QuoteProducts.ToList();
+                    for (int i = 0; i < quoteProductsList.Count; i++)
+                    {
+                        <tr>
+                            <td class="row-no">@(i + 1)</td>
+                            <td>
+                                <input type="hidden" name="quoteProducts[@i].Id" value="@quoteProductsList[i].Id" />
+                                <select name="quoteProducts[@i].ProductId" class="form-select productId" required>
+                                    <option value="">-- Select --</option>
+                                    @foreach (var product in products)
+                                    {
+                                        <option value="@product.Id" selected="@(quoteProductsList[i].ProductId == product.Id)">@product.Name</option>
+                                    }
+                                </select>
+                            </td>
+                            <td><input type="number" step="1" class="form-control loadedWeight" name="quoteProducts[@i].LoadedWeight" value="@quoteProductsList[i].LoadedWeight" /></td>
+                            <td><input type="number" step="1" class="form-control unloadWeight" name="quoteProducts[@i].UnloadWeight" value="@quoteProductsList[i].UnloadWeight" /></td>
+                            <td><input type="number" step="1" class="form-control nos" name="quoteProducts[@i].Nos" value="@quoteProductsList[i].Nos" /></td>
+                            <td><input type="number" step="1" class="form-control gross" name="quoteProducts[@i].Gross" value="@quoteProductsList[i].Gross" /></td>
+                            <td><input type="number" step="1" class="form-control boraCount" name="quoteProducts[@i].BoraCount" value="@quoteProductsList[i].BoraCount" /></td>
+                            <td><input type="number" step="0.1" class="form-control boraReport" name="quoteProducts[@i].BoraReport" value="@quoteProductsList[i].BoraReport" /></td>
+                            <td><input type="number" step="0.1" class="form-control productReport" name="quoteProducts[@i].ProductReport" value="@quoteProductsList[i].ProductReport" /></td>
+                            <td><input type="number" step="0.1" class="form-control netWeight" readonly name="quoteProducts[@i].NetWeight" value="@quoteProductsList[i].NetWeight" /></td>
+                            <td><input type="number" step="0.1" class="form-control rate" name="quoteProducts[@i].Rate" required value="@quoteProductsList[i].Rate" /></td>
+                            <td><input type="number" step="0.1" class="form-control totalAmount" readonly value="@quoteProductsList[i].TotalAmount" name="quoteProducts[@i].TotalAmount" /></td>
+                            <td><button type="button" class="btn btn-danger btn-sm removeRow">Delete</button></td>
+                        </tr>
+                    }
                 }
-            }
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="10" class="text-end fw-bold">Total</td>
-                <td colspan="2">
-                    <input type="number" class="form-control" name="Total" id="Total" asp-for="Total" readonly />
-                </td>
-                <td></td>
-            </tr>
-        </tfoot>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="10" class="text-end fw-bold">Total</td>
+                    <td colspan="2">
+                        <input type="number" class="form-control" name="Total" id="Total" asp-for="Total" readonly />
+                    </td>
+                    <td></td>
+                </tr>
+            </tfoot>
         </table>
     </div>
     <button type="button" class="btn btn-secondary" id="addProductBtn">Add Product</button>
@@ -165,12 +163,14 @@
             $('#grandTotal').val(grandTotal.toFixed(0));
         }
 
-        function isRowFilled(row) {
+       function isRowFilled(row) {
             var productId = row.find('.productId').val();
             var loadedWeight = row.find('.loadedWeight').val();
             var unloadWeight = row.find('.unloadWeight').val();
+            var nos = row.find('.nos').val();
             var rate = row.find('.rate').val();
-            return productId && loadedWeight && unloadWeight && rate;
+
+            return (productId && nos && rate) || (productId && loadedWeight && unloadWeight && rate);
         }
 
         function addProductRow() {

@@ -33,8 +33,6 @@
             <label asp-for="Date" class="form-label">Date</label>
             <input asp-for="Date" class="form-control" type="date" />
         </div>
-    </div>
-    <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="BillNumber" class="form-label">Bill Number</label>
             <input asp-for="BillNumber" value="@NextBillNumber" class="form-control" readonly />
@@ -43,35 +41,35 @@
     <h4>Products</h4>
     <div class="table-responsive">
         <table class="table" id="productsTable">
-        <thead>
-            <tr>
-                <th>NO</th>
-                <th><span style="min-width: 80px;">Product</span></th>
-                <th>Loaded Weight</th>
-                <th>Unload Weight</th>
-                <th>Nos</th>
-                <th>Gross</th>
-                <th>Bora Count</th>
-                <th>Bora Report</th>
-                <th>Product Report</th>
-                <th>Net Weight</th>
-                <th>Rate</th>
-                <th>Total Amount</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Dynamic rows will be added here -->
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="10" class="text-end fw-bold">Total</td>
-                <td colspan="2">
-                    <input type="number" class="form-control" name="Total" id="Total" readonly />
-                </td>
-                <td></td>
-            </tr>
-        </tfoot>
+            <thead>
+                <tr>
+                    <th>NO</th>
+                    <th><span style="min-width: 80px;">Product</span></th>
+                    <th>Loaded Weight</th>
+                    <th>Unload Weight</th>
+                    <th>Nos</th>
+                    <th>Gross</th>
+                    <th>Bora Count</th>
+                    <th>Bora Report</th>
+                    <th>Product Report</th>
+                    <th>Net Weight</th>
+                    <th>Rate</th>
+                    <th>Total Amount</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Dynamic rows will be added here -->
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="10" class="text-end fw-bold">Total</td>
+                    <td colspan="2">
+                        <input type="number" class="form-control" name="Total" id="Total" readonly />
+                    </td>
+                    <td></td>
+                </tr>
+            </tfoot>
         </table>
     </div>
     <button type="button" class="btn btn-secondary" id="addProductBtn">Add Product</button>
@@ -277,7 +275,7 @@
             var formatted = yyyy + '-' + mm + '-' + dd;
             $('#Date').val(formatted);
 
-            addProductRow();  
+            addProductRow();
         });
 
     </script>

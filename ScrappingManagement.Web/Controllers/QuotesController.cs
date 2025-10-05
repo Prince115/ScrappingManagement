@@ -8,21 +8,21 @@ using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Controllers
 {
-    [Authorize(Roles = "Admin,User")]
-    public class QuotesController : Controller
-    {
-        private readonly ILogger<QuotesController> _logger;
-        private readonly AppDbContext _context;
-        public QuotesController(ILogger<QuotesController> logger, AppDbContext context)
-        {
-            _logger = logger;
-            _context = context;
+	[Authorize(Roles = "Admin,User")]
+	public class QuotesController : Controller
+	{
+		private readonly ILogger<QuotesController> _logger;
+		private readonly AppDbContext _context;
+		public QuotesController(ILogger<QuotesController> logger, AppDbContext context)
+		{
+			_logger = logger;
+			_context = context;
 
-        }
+		}
 
-        public async Task<IActionResult> Index(int? pageNumber, int? pageSize, int? supplierId, DateTime? fromDate, DateTime? toDate, QuoteStatus? status)
-        {
-			
+		public async Task<IActionResult> Index(int? pageNumber, int? pageSize, int? supplierId, DateTime? fromDate, DateTime? toDate, QuoteStatus? status)
+		{
+
 			int currentPageSize = pageSize ?? 20;
 			var quotes = _context.Quotes
 					   .Include(q => q.Supplier)
@@ -84,7 +84,7 @@ namespace ScrappingManagement.Web.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create([Bind("Date,Location,SupplierId,Total,FinalTotal,Kato,Status")] Quote quote, List<QuoteProduct> quoteProducts)
+		public async Task<IActionResult> Create([Bind("Date,Location,SupplierId,Total,FinalTotal,Kato,Status,BillNumber")] Quote quote, List<QuoteProduct> quoteProducts)
 		{
 			if (ModelState.IsValid)
 			{
@@ -222,8 +222,11 @@ namespace ScrappingManagement.Web.Controllers
 							if (existingProduct != null)
 							{
 								existingProduct.ProductId = product.ProductId;
-								existingProduct.LoadedWeight = product.LoadedWeight;
-								existingProduct.UnloadWeight = product.UnloadWeight;
+								if ((product.Nos ?? 0) <= 0)
+								{
+									existingProduct.LoadedWeight = product.LoadedWeight;
+									existingProduct.UnloadWeight = product.UnloadWeight;
+								}
 								existingProduct.BoraCount = product.BoraCount;
 								existingProduct.BoraReport = product.BoraReport;
 								existingProduct.ProductReport = product.ProductReport;
@@ -306,7 +309,7 @@ namespace ScrappingManagement.Web.Controllers
 			return View(quote);
 		}
 
-		[Authorize(Roles = "Admin")] 
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> Delete(int? id)
 		{
 			if (id == null) return NotFound();
