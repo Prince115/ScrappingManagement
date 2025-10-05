@@ -28,6 +28,11 @@
             <span asp-validation-for="Location" class="text-danger"></span>
         </div>
         <div class="col-md-4">
+            <label asp-for="Status" class="form-label">Status</label>
+            <select asp-for="Status" class="form-select" asp-items="ViewBag.QuoteStatuses as SelectList"></select>
+            <span asp-validation-for="Status" class="text-danger"></span>
+        </div>
+        <div class="col-md-4">
             <label asp-for="Date" class="form-label">Date</label>
             <input asp-for="Date" class="form-control" type="date" />
             <span asp-validation-for="Date" class="text-danger"></span>

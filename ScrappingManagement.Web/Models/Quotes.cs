@@ -13,9 +13,10 @@ public class Quote
 	[ForeignKey("SupplierId")]
 	public Supplier? Supplier { get; set; }
 
-	public ICollection<QuoteProduct> QuoteProducts { get; set; } = new List<QuoteProduct>();
+	public ICollection<QuoteProduct> QuoteProducts { get; set; } = [];
 
 	public decimal Total { get; set; }
 	public decimal FinalTotal { get; set; }
 	public decimal Kato { get; set; }
+    public QuoteStatus Status { get; set; } = QuoteStatus.ReportPending; 
 }

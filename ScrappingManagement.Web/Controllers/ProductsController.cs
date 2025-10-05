@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScrappingManagement.Web.Data;
+using ScrappingManagement.Web.Dto;
 using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Controllers
 {
+    [Authorize(Roles = "Admin,User")]
     public class ProductsController : Controller
     {
         private readonly AppDbContext _context;
@@ -15,9 +18,22 @@ namespace ScrappingManagement.Web.Controllers
         }
 
         // GET: Products
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, int? pageNumber, int? pageSize)
         {
-            return View(await _context.Products.AsNoTracking().ToListAsync());
+            int currentPageSize = pageSize ?? 10;
+
+            var products = from s in _context.Products
+                           select s;
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                products = products.Where(s => s.Name.Contains(searchString));
+            }
+
+            ViewData["CurrentFilter"] = searchString;
+            ViewData["CurrentPageSize"] = currentPageSize;
+
+            return View(await PaginatedList<Product>.CreateAsync(products.AsNoTracking(), pageNumber ?? 1, currentPageSize));
         }
 
         // GET: Products/Details/5

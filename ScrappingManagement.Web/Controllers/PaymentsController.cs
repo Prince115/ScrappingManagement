@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScrappingManagement.Web.Data;
@@ -7,23 +8,24 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace ScrappingManagement.Web.Controllers
 {
-	public class PaymentsController : Controller
-	{
-		private readonly AppDbContext _context;
+    [Authorize(Roles = "Admin,User")]
+    public class PaymentsController : Controller
+    {
+        private readonly AppDbContext _context;
 
-		public PaymentsController(AppDbContext context)
-		{
-			_context = context;
-		}
+        public PaymentsController(AppDbContext context)
+        {
+            _context = context;
+        }
 
-		public async Task<IActionResult> Index(
-		    int? pageNumber,
-		    int? pageSize,
-		    int? supplierId,
-		    PaymentMode? paymentMode,
-		    DateTime? fromDate,
-		    DateTime? toDate)
-		{
+        public async Task<IActionResult> Index(
+            int? pageNumber,
+            int? pageSize,
+            int? supplierId,
+            PaymentMode? paymentMode,
+            DateTime? fromDate,
+            DateTime? toDate)
+        {
 			int currentPageSize = pageSize ?? 20;
 
 			var payments = _context.Payments.AsQueryable();

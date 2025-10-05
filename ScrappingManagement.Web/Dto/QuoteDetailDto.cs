@@ -1,3 +1,5 @@
+using ScrappingManagement.Web.Models;
+
 namespace ScrappingManagement.Web.Dto;
 public class QuoteDetailDto
 {
@@ -9,6 +11,7 @@ public class QuoteDetailDto
 	public decimal FinalTotal { get; set; }
 	public decimal Kato { get; set; }
 	public decimal Total { get; set; }
+	public QuoteStatus Status { get; set; } // New Status field
 	public List<QuoteProductDetailDto> Products { get; set; }
 }
 

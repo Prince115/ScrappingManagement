@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ScrappingManagement.Web.Data;
 using ScrappingManagement.Web.Dto;
@@ -6,25 +8,21 @@ using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Controllers
 {
-	public class QuotesController : Controller
-	{
-		private readonly ILogger<QuotesController> _logger;
-		private readonly AppDbContext _context;
-		public QuotesController(ILogger<QuotesController> logger, AppDbContext context)
-		{
-			_logger = logger;
-			_context = context;
+    [Authorize(Roles = "Admin,User")]
+    public class QuotesController : Controller
+    {
+        private readonly ILogger<QuotesController> _logger;
+        private readonly AppDbContext _context;
+        public QuotesController(ILogger<QuotesController> logger, AppDbContext context)
+        {
+            _logger = logger;
+            _context = context;
 
-		}
+        }
 
-		public async Task<IActionResult> Index(int? pageNumber, int? pageSize, int? supplierId, DateTime? fromDate, DateTime? toDate)
-		{
-			// var quotes = await _context.Quotes
-			//     .Include(q => q.Supplier)
-			//     .Include(q => q.QuoteProducts)
-			//     .ToListAsync();
-			// return View(quotes);
-
+        public async Task<IActionResult> Index(int? pageNumber, int? pageSize, int? supplierId, DateTime? fromDate, DateTime? toDate, QuoteStatus? status)
+        {
+			
 			int currentPageSize = pageSize ?? 20;
 			var quotes = _context.Quotes
 					   .Include(q => q.Supplier)
@@ -47,14 +45,20 @@ namespace ScrappingManagement.Web.Controllers
 				quotes = quotes.Where(q => q.Date <= toDate.Value.Date);
 			}
 
+			if (status.HasValue)
+			{
+				quotes = quotes.Where(q => q.Status == status.Value);
+			}
+
 			quotes = quotes.OrderByDescending(q => q.Id);
 
 			ViewBag.Suppliers = await _context.Suppliers.OrderBy(s => s.Name).ToListAsync();
+			ViewBag.QuoteStatuses = new SelectList(Enum.GetValues(typeof(QuoteStatus)).Cast<QuoteStatus>());
 			ViewData["CurrentSupplierFilter"] = supplierId;
 			ViewData["CurrentFromDateFilter"] = fromDate?.ToString("yyyy-MM-dd");
 			ViewData["CurrentToDateFilter"] = toDate?.ToString("yyyy-MM-dd");
 			ViewData["CurrentPageSize"] = currentPageSize;
-
+			ViewData["CurrentStatusFilter"] = status;
 
 			return View(await PaginatedList<Quote>.CreateAsync(quotes.AsNoTracking(), pageNumber ?? 1, currentPageSize));
 
@@ -65,6 +69,7 @@ namespace ScrappingManagement.Web.Controllers
 
 			ViewBag.Suppliers = await _context.Suppliers.OrderBy(o => o.Name).ToListAsync();
 			ViewBag.Products = await _context.Products.OrderBy(o => o.Name).ToListAsync();
+			ViewBag.QuoteStatuses = new SelectList(Enum.GetValues(typeof(QuoteStatus)).Cast<QuoteStatus>());
 
 			var maxBillNumber = await _context.Quotes.CountAsync();
 
@@ -79,7 +84,7 @@ namespace ScrappingManagement.Web.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create(Quote quote, List<QuoteProduct> quoteProducts)
+		public async Task<IActionResult> Create([Bind("Date,Location,SupplierId,Total,FinalTotal,Kato,Status")] Quote quote, List<QuoteProduct> quoteProducts)
 		{
 			if (ModelState.IsValid)
 			{
@@ -91,6 +96,7 @@ namespace ScrappingManagement.Web.Controllers
 
 			ViewBag.Suppliers = await _context.Suppliers.OrderBy(o => o.Name).ToListAsync();
 			ViewBag.Products = await _context.Products.OrderBy(o => o.Name).ToListAsync();
+			ViewBag.QuoteStatuses = new SelectList(Enum.GetValues(typeof(QuoteStatus)).Cast<QuoteStatus>(), quote.Status);
 
 			return View(quote);
 		}
@@ -112,6 +118,7 @@ namespace ScrappingManagement.Web.Controllers
 				    BillNumber = q.BillNumber,
 				    Kato = q.Kato,
 				    Total = q.Total,
+				    Status = q.Status, // Add Status
 				    Products = q.QuoteProducts
 					  .Join(_context.Products,
 						   qp => qp.ProductId,
@@ -159,13 +166,14 @@ namespace ScrappingManagement.Web.Controllers
 
 			ViewBag.Suppliers = await _context.Suppliers.OrderBy(o => o.Name).ToListAsync();
 			ViewBag.Products = await _context.Products.OrderBy(o => o.Name).ToListAsync();
+			ViewBag.QuoteStatuses = new SelectList(Enum.GetValues(typeof(QuoteStatus)).Cast<QuoteStatus>(), quote.Status);
 
 			return View(quote);
 		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(int id, Quote quote, List<QuoteProduct> quoteProducts)
+		public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Location,SupplierId,Total,FinalTotal,Kato,Status")] Quote quote, List<QuoteProduct> quoteProducts)
 		{
 			if (id != quote.Id)
 			{
@@ -192,6 +200,7 @@ namespace ScrappingManagement.Web.Controllers
 					existingQuote.FinalTotal = quote.FinalTotal;
 					existingQuote.Kato = quote.Kato;
 					existingQuote.Total = quote.Total;
+					existingQuote.Status = quote.Status; // Update Status
 
 					// Update QuoteProducts
 					// Remove products not in the submitted list
@@ -268,6 +277,7 @@ namespace ScrappingManagement.Web.Controllers
 					Total = q.Total,
 					BillNumber = q.BillNumber,
 					Kato = q.Kato,
+					Status = q.Status, // Add Status
 					Products = q.QuoteProducts
 					  .Join(_context.Products,
 						   qp => qp.ProductId,
@@ -294,6 +304,41 @@ namespace ScrappingManagement.Web.Controllers
 			if (quote == null) return NotFound();
 
 			return View(quote);
+		}
+
+		[Authorize(Roles = "Admin")] 
+		public async Task<IActionResult> Delete(int? id)
+		{
+			if (id == null) return NotFound();
+
+			var quote = await _context.Quotes
+				.Include(q => q.Supplier)
+				.FirstOrDefaultAsync(m => m.Id == id);
+
+			if (quote == null) return NotFound();
+
+			return View(quote);
+		}
+
+		// POST: Quotes/Delete/5
+		[HttpPost, ActionName("Delete")]
+		[ValidateAntiForgeryToken]
+		[Authorize(Roles = "Admin")] // Only Admin can delete
+		public async Task<IActionResult> DeleteConfirmed(int id)
+		{
+			var quote = await _context.Quotes
+				.Include(q => q.QuoteProducts)
+				.FirstOrDefaultAsync(q => q.Id == id);
+
+			if (quote == null)
+			{
+				return NotFound();
+			}
+
+			_context.QuoteProducts.RemoveRange(quote.QuoteProducts);
+			_context.Quotes.Remove(quote);
+			await _context.SaveChangesAsync();
+			return RedirectToAction(nameof(Index));
 		}
 	}
 }

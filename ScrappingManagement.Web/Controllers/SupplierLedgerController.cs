@@ -1,10 +1,14 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using ScrappingManagement.Web.Data;
 using ScrappingManagement.Web.Dto;
+using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Controllers
 {
+    [Authorize(Roles = "Admin,User")]
     public class SupplierLedgerController : Controller
     {
         private readonly AppDbContext _context;

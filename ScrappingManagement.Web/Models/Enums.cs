@@ -7,4 +7,12 @@ namespace ScrappingManagement.Web.Models
         Cheque,
         Online
     }
+
+    public enum QuoteStatus
+    {
+        ReportPending,
+        PaymentPending,
+        NeedToCheck,
+        Completed
+    }
 }

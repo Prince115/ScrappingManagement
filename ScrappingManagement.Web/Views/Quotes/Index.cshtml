@@ -46,6 +46,7 @@
             <th>Date</th>
             <th>Supplier</th>
             <th>Location</th>
+            <th>Status</th>
             <th>Final Total</th>
             <th>Products Count</th>
             <th>Actions</th>
@@ -59,12 +60,14 @@
                 <td>@quote.Date.ToString("dd-MMMM-yyyy")</td>
                 <td>@quote.Supplier?.Name</td>
                 <td>@quote.Location</td>
+                <td>@quote.Status</td>
                 <td>@quote.FinalTotal</td>
                 <td>@quote.QuoteProducts.Count</td>
                 <td>
-                    <a asp-action="Print" asp-route-id="@quote.Id" target="_blank">Print</a> |
-                    <a asp-action="Details" asp-route-id="@quote.Id">Details</a> |
-                    <a asp-action="Edit" asp-route-id="@quote.Id">Edit</a>
+                    <a asp-action="Print" asp-route-id="@quote.Id" target="_blank" class="btn btn-sm btn-outline-secondary">Print</a> |
+                    <a asp-action="Details" asp-route-id="@quote.Id" class="btn btn-sm btn-outline-info">Details</a> |
+                    <a asp-action="Edit" asp-route-id="@quote.Id" class="btn btn-sm btn-outline-primary">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@quote.Id" class="btn btn-sm btn-outline-danger">Delete</a>
                 </td>
             </tr>
         }
