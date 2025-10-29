@@ -1,40 +1,28 @@
 using Microsoft.AspNetCore.Mvc;
-using ScrappingManagement.Web.Models;
-using System.Diagnostics;
-using ScrappingManagement.Web.Services;
-namespace ScrappingManagement.Web.Controllers
+using Microsoft.EntityFrameworkCore;
+using ScrappingManagement.Web.Data;
+using ScrappingManagement.Web.Dto;
+namespace ScrappingManagement.Web.Controllers;
+
+public class HomeController : Controller
 {
-	public class HomeController : Controller
+	private readonly AppDbContext _context;
+
+	public HomeController(AppDbContext context)
 	{
-		private readonly ILogger<HomeController> _logger;
-		private readonly WhatsAppInvoiceService _service;
+		_context = context;
+	}
 
-          public HomeController(ILogger<HomeController> logger, WhatsAppInvoiceService service)
+	public async Task<IActionResult> Dashboard()
+	{
+		var vm = new DashboardViewModel
 		{
-			_logger = logger;
-               _service = service;
+			TotalCustomers = await _context.Customers.CountAsync(),
+			TotalInvoices = await _context.Invoices.CountAsync(),
+			TotalQuotes = await _context.Quotes.CountAsync(),
+			TotalSuppliers = await _context.Suppliers.CountAsync(),
+		};
 
-          }
-
-		public IActionResult Index()
-		{
-			return View();
-		}
-          public IActionResult Send()
-          {
-               _service.SendInvoiceTextAsync("whatsapp:+917623830205", "INV-1001", 250.75m, "2024-07-15").Wait();
-               return View();
-          }
-
-          public IActionResult Privacy()
-		{
-			return View();
-		}
-
-		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-		public IActionResult Error()
-		{
-			return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-		}
+		return View(vm);
 	}
 }

@@ -203,7 +203,7 @@ namespace ScrappingManagement.Web.Controllers
 			return View(payment);
 		}
 
-		// GET: Payments/Delete/5
+		[Authorize(Roles = "Admin")]
 		public async Task<IActionResult> Delete(int? id)
 		{
 			if (id == null)
@@ -234,8 +234,8 @@ namespace ScrappingManagement.Web.Controllers
 			return View(payment);
 		}
 
-		// POST: Payments/Delete/5
 		[HttpPost, ActionName("Delete")]
+		[Authorize(Roles = "Admin")]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> DeleteConfirmed(int id)
 		{

@@ -1,0 +1,43 @@
+﻿@using ScrappingManagement.Web.Dto
+@model DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h2 class="mb-4">Dashboard</h2>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-white">
+            <div class="card-body">
+                <h5><a asp-action="index" asp-controller="customers">Total Customers</a></h5>
+                <h3>@Model.TotalCustomers</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5><a asp-action="index" asp-controller="invoices" class="link-">Total Invoices</a></h5>
+                <h3>@Model.TotalInvoices</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5><a asp-action="index" asp-controller="suppliers">Total Suppliers</a></h5>
+                <h3>@Model.TotalSuppliers</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <h5><a asp-action="index" asp-controller="quotes">Total Quotes</a></h5>
+                <h3>@Model.TotalQuotes</h3>
+            </div>
+        </div>
+    </div>
+</div>

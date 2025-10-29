@@ -17,7 +17,6 @@ namespace ScrappingManagement.Web.Controllers
 		{
 			_logger = logger;
 			_context = context;
-
 		}
 
 		public async Task<IActionResult> Index(int? pageNumber, int? pageSize, int? supplierId, DateTime? fromDate, DateTime? toDate, QuoteStatus? status)
@@ -71,12 +70,11 @@ namespace ScrappingManagement.Web.Controllers
 			ViewBag.Products = await _context.Products.OrderBy(o => o.Name).ToListAsync();
 			ViewBag.QuoteStatuses = new SelectList(Enum.GetValues(typeof(QuoteStatus)).Cast<QuoteStatus>());
 
-			var maxBillNumber = await _context.Quotes.CountAsync();
-
+			var maxBillNumber = await _context.Quotes.OrderByDescending(a => Convert.ToInt16(a.BillNumber ?? "0")).FirstOrDefaultAsync();
 			int nextBillNumberInt = 1;
-			if (maxBillNumber > 0)
+			if (maxBillNumber is not null || Convert.ToInt16(maxBillNumber?.BillNumber) > 0)
 			{
-				nextBillNumberInt = maxBillNumber + 1;
+				nextBillNumberInt = Convert.ToInt16(maxBillNumber?.BillNumber) + 1;
 			}
 			ViewBag.NextBillNumber = nextBillNumberInt;
 			return View();
@@ -88,6 +86,13 @@ namespace ScrappingManagement.Web.Controllers
 		{
 			if (ModelState.IsValid)
 			{
+				var maxBillNumber = await _context.Quotes.OrderByDescending(a => Convert.ToInt16(a.BillNumber ?? "0")).FirstOrDefaultAsync();
+				int nextBillNumberInt = 1;
+				if (maxBillNumber is not null || Convert.ToInt16(maxBillNumber?.BillNumber) > 0)
+				{
+					nextBillNumberInt = Convert.ToInt16(maxBillNumber?.BillNumber) + 1;
+				}
+				quote.BillNumber = nextBillNumberInt.ToString();
 				quote.QuoteProducts = quoteProducts;
 				_context.Quotes.Add(quote);
 				await _context.SaveChangesAsync();
@@ -101,6 +106,35 @@ namespace ScrappingManagement.Web.Controllers
 			return View(quote);
 		}
 
+		[HttpPost]
+		[Route("Quote/UpdateStatus")]
+		public IActionResult UpdateStatus([FromBody] UpdateQuoteStatusDto dto)
+		{
+			if (dto == null || string.IsNullOrWhiteSpace(dto.Status))
+				return BadRequest("Invalid data.");
+
+			var quote = _context.Quotes.FirstOrDefault(q => q.Id == dto.Id);
+			if (quote == null)
+				return NotFound("Quote not found.");
+
+			try
+			{
+				if (Enum.TryParse<QuoteStatus>(dto.Status, out var parsedStatus))
+				{
+					quote.Status = parsedStatus;
+					_context.SaveChanges();
+					return Ok(new { success = true });
+				}
+				else
+				{
+					return BadRequest("Invalid status value.");
+				}
+			}
+			catch (Exception ex)
+			{
+				return StatusCode(500, new { success = false, message = ex.Message });
+			}
+		}
 		public async Task<IActionResult> Details(int? id)
 		{
 			if (id == null) return NotFound();
@@ -200,19 +234,11 @@ namespace ScrappingManagement.Web.Controllers
 					existingQuote.FinalTotal = quote.FinalTotal;
 					existingQuote.Kato = quote.Kato;
 					existingQuote.Total = quote.Total;
-					existingQuote.Status = quote.Status; // Update Status
-
-					// Update QuoteProducts
-					// Remove products not in the submitted list
-					//existingQuote.QuoteProducts
-					//    .RemoveAll(p => !quoteProducts.Any(qp => qp.Id == p.Id && qp.Id != 0));
-					existingQuote.QuoteProducts = existingQuote.QuoteProducts
-										    .Where(p => quoteProducts.Any(qp => qp.Id == p.Id && qp.Id != 0))
-										    .ToList();
+					existingQuote.Status = quote.Status;
 
 					foreach (var product in quoteProducts)
 					{
-						if (product.Id == 0)
+						if (product.Id == 0 && product.Deleted == 0)
 						{
 							existingQuote.QuoteProducts.Add(product);
 						}
@@ -221,19 +247,32 @@ namespace ScrappingManagement.Web.Controllers
 							var existingProduct = existingQuote.QuoteProducts.FirstOrDefault(p => p.Id == product.Id);
 							if (existingProduct != null)
 							{
-								existingProduct.ProductId = product.ProductId;
-								if ((product.Nos ?? 0) <= 0)
+								if (product.Deleted == 1)
 								{
-									existingProduct.LoadedWeight = product.LoadedWeight;
-									existingProduct.UnloadWeight = product.UnloadWeight;
+									existingQuote.QuoteProducts.Remove(existingProduct);
 								}
-								existingProduct.BoraCount = product.BoraCount;
-								existingProduct.BoraReport = product.BoraReport;
-								existingProduct.ProductReport = product.ProductReport;
-								existingProduct.Rate = product.Rate;
-								existingProduct.Gross = product.Gross;
-								existingProduct.TotalAmount = product.TotalAmount;
-								existingProduct.Nos = product.Nos;
+								else
+								{
+									existingProduct.ProductId = product.ProductId;
+									if ((product.Nos ?? 0) <= 0)
+									{
+										existingProduct.LoadedWeight = product.LoadedWeight;
+										existingProduct.UnloadWeight = product.UnloadWeight;
+									}
+									else
+									{
+										existingProduct.UnloadWeight = existingProduct.LoadedWeight = null;
+									}
+									existingProduct.BoraCount = product.BoraCount;
+									existingProduct.BoraReport = product.BoraReport;
+									existingProduct.ProductReport = product.ProductReport;
+									existingProduct.Rate = product.Rate;
+									existingProduct.Description = product.Description;
+									existingProduct.Gross = product.Gross;
+									existingProduct.TotalAmount = product.TotalAmount;
+									existingProduct.Nos = product.Nos;
+									existingProduct.NetWeight = product.NetWeight;
+								}
 							}
 						}
 					}

@@ -1,0 +1,38 @@
+﻿@model List<Invoice>
+
+@{
+    ViewData["Title"] = "Invoices";
+}
+
+<h2>Invoices</h2>
+<a asp-action="Create" class="btn btn-success mt-3">Add Invoice</a>
+
+<table class="table table-bordered table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th>Invoice #</th>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Location</th>
+            <th>Total</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var invoice in Model)
+        {
+            <tr>
+                <td>@invoice.InvoiceNumber</td>
+                <td>@invoice.Date.ToString("yyyy-MM-dd")</td>
+                <td>@invoice.Customer?.Name</td>
+                <td>@invoice.Location</td>
+                <td>@invoice.FinalAmount.ToString("C")</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@invoice.Id" class="btn btn-sm btn-info">View</a>
+                    <a asp-action="Edit" asp-route-id="@invoice.Id" class="btn btn-sm btn-warning">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+

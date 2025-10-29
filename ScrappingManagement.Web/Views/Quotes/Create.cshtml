@@ -7,6 +7,7 @@
 }
 
 <h2>Create Quote</h2>
+<div id="formErrors" class="text-danger mb-3" style="display:none;"></div>
 
 <form asp-action="Create" method="post">
     <div class="row mb-3">
@@ -45,6 +46,7 @@
                 <tr>
                     <th>NO</th>
                     <th><span style="min-width: 80px;">Product</span></th>
+                    <th>Description</th>
                     <th>Loaded Weight</th>
                     <th>Unload Weight</th>
                     <th>Nos</th>
@@ -177,10 +179,11 @@
                     loadedWeightValue = prevUnload;
                 }
             }
+            row.append($('<td>').append('<input type="text" class="form-control description" name="quoteProducts[' + rowIdx + '].Description" />'));
             row.append($('<td>').append('<input type="number" step="1" class="form-control loadedWeight" name="quoteProducts[' + rowIdx + '].LoadedWeight" value="' + loadedWeightValue + '" />'));
             row.append($('<td>').append('<input type="number" step="1" class="form-control unloadWeight" name="quoteProducts[' + rowIdx + '].UnloadWeight" />'));
             row.append($('<td>').append('<input type="number" step="1" class="form-control nos" name="quoteProducts[' + rowIdx + '].Nos" />'));
-            row.append($('<td>').append('<input type="number" step="1" class="form-control gross" name="quoteProducts[' + rowIdx + '].Gross"  />'));
+            row.append($('<td>').append('<input type="number" step="0.01" min="0" class="form-control gross" name="quoteProducts[' + rowIdx + '].Gross"  />'));
             row.append($('<td>').append('<input type="number" step="1" class="form-control boraCount" name="quoteProducts[' + rowIdx + '].BoraCount" value="0"  />'));
             row.append($('<td>').append('<input type="number" step="0.1" class="form-control boraReport" name="quoteProducts[' + rowIdx + '].BoraReport" value="0"  />'));
             row.append($('<td>').append('<input type="number" step="0.1" class="form-control productReport" name="quoteProducts[' + rowIdx + '].ProductReport" value="0"  />'));
@@ -276,7 +279,49 @@
             $('#Date').val(formatted);
 
             addProductRow();
+          $('form').on('submit', function (e) {
+               if (!validateForm()) {
+                    e.preventDefault(); // Prevent form submission if validation fails
+               }
+          });
         });
+        function validateForm() {
+            let isValid = true;
+            let errorMessages = [];
+
+            // Iterate through each product row
+            $('#productsTable tbody tr').each(function () {
+                var row = $(this);
+                var productId = row.find('.productId').val();
+                var loadedWeight = row.find('.loadedWeight').val();
+                var unloadWeight = row.find('.unloadWeight').val();
+                var nos = row.find('.nos').val();
+
+                // Check if product is selected
+                if (!productId) {
+                    isValid = false;
+                    errorMessages.push('Please select a product for each row.');
+                    row.find('.productId').addClass('is-invalid');
+                } else {
+                    row.find('.productId').removeClass('is-invalid');
+                }
+
+               if ((!loadedWeight && !unloadWeight) && !nos) {
+                    isValid = false;
+                    errorMessages.push('At least one of "Loaded Weight", "Unload Weight", or "Nos" must be provided.');
+                    row.find('.loadedWeight, .unloadWeight, .nos').addClass('is-invalid');
+                } else {
+                    row.find('.loadedWeight, .unloadWeight, .nos').removeClass('is-invalid');
+                }
+            });
+
+            // Show error messages if the form is invalid
+            if (!isValid) {
+                alert(errorMessages.join('\n')); // You can use a better error display method here
+            }
+
+            return isValid;
+        }
 
     </script>
 }

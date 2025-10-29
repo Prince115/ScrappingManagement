@@ -50,6 +50,7 @@
                 <tr>
                     <th>NO</th>
                     <th>Product</th>
+                    <th>Description</th>
                     <th>Loaded Weight</th>
                     <th>Unload Weight</th>
                     <th>Nos</th>
@@ -73,6 +74,7 @@
                             <td class="row-no">@(i + 1)</td>
                             <td>
                                 <input type="hidden" name="quoteProducts[@i].Id" value="@quoteProductsList[i].Id" />
+                                <input type="hidden" name="quoteProducts[@i].Deleted" value="0" />
                                 <select name="quoteProducts[@i].ProductId" class="form-select productId" required>
                                     <option value="">-- Select --</option>
                                     @foreach (var product in products)
@@ -81,10 +83,11 @@
                                     }
                                 </select>
                             </td>
+                            <td><input type="text" class="form-control " name="quoteProducts[@i].Description" value="@quoteProductsList[i].Description" /></td>
                             <td><input type="number" step="1" class="form-control loadedWeight" name="quoteProducts[@i].LoadedWeight" value="@quoteProductsList[i].LoadedWeight" /></td>
                             <td><input type="number" step="1" class="form-control unloadWeight" name="quoteProducts[@i].UnloadWeight" value="@quoteProductsList[i].UnloadWeight" /></td>
                             <td><input type="number" step="1" class="form-control nos" name="quoteProducts[@i].Nos" value="@quoteProductsList[i].Nos" /></td>
-                            <td><input type="number" step="1" class="form-control gross" name="quoteProducts[@i].Gross" value="@quoteProductsList[i].Gross" /></td>
+                            <td><input type="number" step="0.01" min="0" class="form-control gross" name="quoteProducts[@i].Gross" value="@quoteProductsList[i].Gross" /></td>
                             <td><input type="number" step="1" class="form-control boraCount" name="quoteProducts[@i].BoraCount" value="@quoteProductsList[i].BoraCount" /></td>
                             <td><input type="number" step="0.1" class="form-control boraReport" name="quoteProducts[@i].BoraReport" value="@quoteProductsList[i].BoraReport" /></td>
                             <td><input type="number" step="0.1" class="form-control productReport" name="quoteProducts[@i].ProductReport" value="@quoteProductsList[i].ProductReport" /></td>
@@ -124,153 +127,201 @@
 
 @section Scripts {
     <script>
-        var products = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(products));
-        var suppliers = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(suppliers));
+         var products = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(products));
+         var suppliers = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(suppliers));
 
-        function recalcRow(row) {
-            var loadedWeight = parseFloat(row.find('.loadedWeight').val()) || 0;
-            var unloadWeight = parseFloat(row.find('.unloadWeight').val()) || 0;
-            var nos = parseInt(row.find('.nos').val()) || 0;
-            var gross = loadedWeight - unloadWeight;
-            if (nos <= 0) {
-                row.find('.gross').val(gross.toFixed(2));
-            }
-            var boraCount = parseFloat(row.find('.boraCount').val()) || 0;
-            var boraReport = parseFloat(row.find('.boraReport').val()) || 0;
-            var productReport = parseFloat(row.find('.productReport').val()) || 0;
-            gross = parseFloat(row.find('.gross').val()) || 0;
-            var netWeight = gross - boraReport - productReport;
-            if (nos > 0) {
-                netWeight = nos * gross;
-            }
-            row.find('.netWeight').val(netWeight.toFixed(2));
-            var rate = parseFloat(row.find('.rate').val()) || 0;
-            var totalAmount = netWeight * rate;
-            row.find('.totalAmount').val(totalAmount.toFixed(2));
-            recalcGridTotal();
-        }
+         function recalcRow(row) {
+             var loadedWeight = parseFloat(row.find('.loadedWeight').val()) || 0;
+             var unloadWeight = parseFloat(row.find('.unloadWeight').val()) || 0;
+             var nos = parseInt(row.find('.nos').val()) || 0;
+             var gross = loadedWeight - unloadWeight;
+             if (nos <= 0) {
+                 row.find('.gross').val(gross.toFixed(2));
+             }
+             var boraCount = parseFloat(row.find('.boraCount').val()) || 0;
+             var boraReport = parseFloat(row.find('.boraReport').val()) || 0;
+             var productReport = parseFloat(row.find('.productReport').val()) || 0;
+             gross = parseFloat(row.find('.gross').val()) || 0;
+             var netWeight = gross - boraReport - productReport;
+             if (nos > 0) {
+                 netWeight = nos * gross;
+             }
+             row.find('.netWeight').val(netWeight.toFixed(2));
+             var rate = parseFloat(row.find('.rate').val()) || 0;
+             var totalAmount = netWeight * rate;
+             row.find('.totalAmount').val(totalAmount.toFixed(2));
+             recalcGridTotal();
+         }
 
-        function recalcGridTotal() {
-            var sum = 0;
+         function recalcGridTotal() {
+             var sum = 0;
+             $('#productsTable tbody tr').each(function () {
+                  if (!$(this).hasClass('deleted')) {
+                      var val = parseFloat($(this).find('.totalAmount').val()) || 0;
+                      sum += val;
+                  }
+             });
+             var floored = Math.floor(sum / 10) * 10;
+             $('#Total').val(floored.toFixed(2));
+             var kato = parseFloat($('#kato').val()) || 0;
+             var grandTotal = floored - kato;
+             $('#grandTotal').val(grandTotal.toFixed(0));
+         }
+
+        function isRowFilled(row) {
+             var productId = row.find('.productId').val();
+             var loadedWeight = row.find('.loadedWeight').val();
+             var unloadWeight = row.find('.unloadWeight').val();
+             var nos = row.find('.nos').val();
+             var rate = row.find('.rate').val();
+
+             return (productId && nos && rate) || (productId && loadedWeight && unloadWeight && rate);
+         }
+
+         function addProductRow() {
+             var lastRow = $('#productsTable tbody tr').last();
+               if (lastRow.hasClass('deleted')) {
+                    lastRow = lastRow.prev();
+               }
+             if (lastRow.length && !isRowFilled(lastRow)) {
+                 alert('Please fill all required fields in the last product row before adding a new one.');
+                 return;
+             }
+             var rowIdx = $('#productsTable tbody tr').length;
+             var row = $('<tr>');
+             row.append($('<td class="row-no">').text(rowIdx + 1));
+             var productSelect = $('<select class="form-select productId" name="quoteProducts[' + rowIdx + '].ProductId" required>');
+             productSelect.append('<option value="">-- Select --</option>');
+             products.forEach(function (p) {
+                 productSelect.append('<option value="' + p.Id + '">' + p.Name + '</option>');
+             });
+             row.append($('<td>').append(productSelect));
+             var loadedWeightValue = "";
+             if (lastRow.length) {
+                 var prevUnload = lastRow.find('.unloadWeight').val();
+                 if (prevUnload) {
+                     loadedWeightValue = prevUnload;
+                 }
+             }
+             row.append('<input type="hidden" class="Deleted" name="quoteProducts[' + rowIdx + '].Deleted" value="0" />');
+             row.append($('<td>').append('<input type="text" class="form-control" name="quoteProducts[' + rowIdx + '].Description" />'));
+             row.append($('<td>').append('<input type="number" step="1" class="form-control loadedWeight" name="quoteProducts[' + rowIdx + '].LoadedWeight" value="' + loadedWeightValue + '" />'));
+             row.append($('<td>').append('<input type="number" step="1" class="form-control unloadWeight" name="quoteProducts[' + rowIdx + '].UnloadWeight" />'));
+             row.append($('<td>').append('<input type="number" step="1" class="form-control nos" name="quoteProducts[' + rowIdx + '].Nos" />'));
+             row.append($('<td>').append('<input type="number" step="0.01" min="0" class="form-control gross" name="quoteProducts[' + rowIdx + '].Gross" />'));
+             row.append($('<td>').append('<input type="number" step="1" class="form-control boraCount" name="quoteProducts[' + rowIdx + '].BoraCount" value="0" />'));
+             row.append($('<td>').append('<input type="number" step="0.1" class="form-control boraReport" name="quoteProducts[' + rowIdx + '].BoraReport" value="0" />'));
+             row.append($('<td>').append('<input type="number" step="0.1" class="form-control productReport" name="quoteProducts[' + rowIdx + '].ProductReport" value="0" />'));
+             row.append($('<td>').append('<input type="number" step="0.1" class="form-control netWeight" readonly name="quoteProducts[' + rowIdx + '].NetWeight"/>'));
+             row.append($('<td>').append('<input type="number" step="0.1" class="form-control rate" name="quoteProducts[' + rowIdx + '].Rate" required />'));
+             row.append($('<td>').append('<input type="number" step="0.1" class="form-control totalAmount" name="quoteProducts[' + rowIdx + '].TotalAmount" readonly />'));
+             row.append($('<td>').append('<button type="button" class="btn btn-danger btn-sm removeRow">Delete</button>'));
+             $('#productsTable tbody').append(row);
+             if (loadedWeightValue) {
+                 row.find('.loadedWeight').trigger('input');
+             }
+             updateRowNumbers();
+         }
+
+         function updateRowNumbers() {
+             $('#productsTable tbody tr').each(function (idx, tr) {
+                 $(tr).find('.row-no').text(idx + 1);
+             });
+         }
+
+         $('#addProductBtn').on('click', addProductRow);
+
+         $('#kato').on('input', function () {
+             recalcGridTotal();
+         });
+
+         $('#SupplierId').on('change', function () {
+             var selectedId = $(this).val();
+             var supplier = suppliers.find(s => s.Id == selectedId);
+             if (supplier) {
+                 $('#Location').val(supplier.Location || '');
+             } else {
+                 $('#Location').val('');
+             }
+         });
+
+         $(document).on('change', '.productId', function () {
+             var selectedId = $(this).val();
+             const row = $(this).closest('tr');
+             var product = products.find(p => p.Id == selectedId);
+             if (product) {
+                 row.find('.rate').val(product.Rate);
+             } else {
+                 row.find('.rate').val('');
+             }
+               recalcRow(row);
+         });
+
+         $(document).on('change', '.loadedWeight, .unloadWeight, .boraCount, .boraReport, .nos, .gross, .productReport, .rate', function () {
+             recalcRow($(this).closest('tr'));
+         });
+
+         $(document).on('click', '.removeRow', function () {
+             const row = $(this).closest('tr');
+             row.find('input[name$=".Deleted"]').val('1');
+             row.addClass('deleted');
+             row.hide();
+             updateRowNumbers();
+             recalcGridTotal();
+         });
+
+         $(document).ready(function () {
+             if (!$('#Date').val()) {
+                 var today = new Date();
+                 var yyyy = today.getFullYear();
+                 var mm = String(today.getMonth() + 1).padStart(2, '0');
+                 var dd = String(today.getDate()).padStart(2, '0');
+                 var formatted = yyyy + '-' + mm + '-' + dd;
+                 $('#Date').val(formatted);
+             }
+
+             if ($('#productsTable tbody tr').length === 0) {
+                 addProductRow();
+             }
+             $('form').on('submit', function (e) {
+                    if (!validateForm()) {
+                         e.preventDefault();
+                    }
+               });
+         });
+         function validateForm() {
+            let isValid = true;
+            let errorMessages = [];
+
             $('#productsTable tbody tr').each(function () {
-                var val = parseFloat($(this).find('.totalAmount').val()) || 0;
-                sum += val;
-            });
-            var floored = Math.floor(sum / 10) * 10;
-            $('#Total').val(floored.toFixed(2));
-            var kato = parseFloat($('#kato').val()) || 0;
-            var grandTotal = floored - kato;
-            $('#grandTotal').val(grandTotal.toFixed(0));
-        }
+                var row = $(this);
+                var productId = row.find('.productId').val();
+                var loadedWeight = row.find('.loadedWeight').val();
+                var unloadWeight = row.find('.unloadWeight').val();
+                var nos = row.find('.nos').val();
 
-       function isRowFilled(row) {
-            var productId = row.find('.productId').val();
-            var loadedWeight = row.find('.loadedWeight').val();
-            var unloadWeight = row.find('.unloadWeight').val();
-            var nos = row.find('.nos').val();
-            var rate = row.find('.rate').val();
-
-            return (productId && nos && rate) || (productId && loadedWeight && unloadWeight && rate);
-        }
-
-        function addProductRow() {
-            var lastRow = $('#productsTable tbody tr').last();
-            if (lastRow.length && !isRowFilled(lastRow)) {
-                alert('Please fill all required fields in the last product row before adding a new one.');
-                return;
-            }
-            var rowIdx = $('#productsTable tbody tr').length;
-            var row = $('<tr>');
-            row.append($('<td class="row-no">').text(rowIdx + 1));
-            var productSelect = $('<select class="form-select productId" name="quoteProducts[' + rowIdx + '].ProductId" required>');
-            productSelect.append('<option value="">-- Select --</option>');
-            products.forEach(function (p) {
-                productSelect.append('<option value="' + p.Id + '">' + p.Name + '</option>');
-            });
-            row.append($('<td>').append(productSelect));
-            var loadedWeightValue = "";
-            if (lastRow.length) {
-                var prevUnload = lastRow.find('.unloadWeight').val();
-                if (prevUnload) {
-                    loadedWeightValue = prevUnload;
+                if (!productId) {
+                    isValid = false;
+                    errorMessages.push('Please select a product for each row.');
+                    row.find('.productId').addClass('is-invalid');
+                } else {
+                    row.find('.productId').removeClass('is-invalid');
                 }
-            }
-            row.append($('<td>').append('<input type="number" step="1" class="form-control loadedWeight" name="quoteProducts[' + rowIdx + '].LoadedWeight" value="' + loadedWeightValue + '" />'));
-            row.append($('<td>').append('<input type="number" step="1" class="form-control unloadWeight" name="quoteProducts[' + rowIdx + '].UnloadWeight" />'));
-            row.append($('<td>').append('<input type="number" step="1" class="form-control nos" name="quoteProducts[' + rowIdx + '].Nos" />'));
-            row.append($('<td>').append('<input type="number" step="0.1" class="form-control gross" name="quoteProducts[' + rowIdx + '].Gross" />'));
-            row.append($('<td>').append('<input type="number" step="1" class="form-control boraCount" name="quoteProducts[' + rowIdx + '].BoraCount" value="0" />'));
-            row.append($('<td>').append('<input type="number" step="0.1" class="form-control boraReport" name="quoteProducts[' + rowIdx + '].BoraReport" value="0" />'));
-            row.append($('<td>').append('<input type="number" step="0.1" class="form-control productReport" name="quoteProducts[' + rowIdx + '].ProductReport" value="0" />'));
-            row.append($('<td>').append('<input type="number" step="0.1" class="form-control netWeight" readonly name="quoteProducts[' + rowIdx + '].NetWeight"/>'));
-            row.append($('<td>').append('<input type="number" step="0.1" class="form-control rate" name="quoteProducts[' + rowIdx + '].Rate" required />'));
-            row.append($('<td>').append('<input type="number" step="0.1" class="form-control totalAmount" name="quoteProducts[' + rowIdx + '].TotalAmount" readonly />'));
-            row.append($('<td>').append('<button type="button" class="btn btn-danger btn-sm removeRow">Delete</button>'));
-            $('#productsTable tbody').append(row);
-            if (loadedWeightValue) {
-                row.find('.loadedWeight').trigger('input');
-            }
-            updateRowNumbers();
-        }
 
-        function updateRowNumbers() {
-            $('#productsTable tbody tr').each(function (idx, tr) {
-                $(tr).find('.row-no').text(idx + 1);
+               if ((!loadedWeight && !unloadWeight) && !nos) {
+                    isValid = false;
+                    errorMessages.push('At least one of "Loaded Weight", "Unload Weight", or "Nos" must be provided.');
+                    row.find('.loadedWeight, .unloadWeight, .nos').addClass('is-invalid');
+                } else {
+                    row.find('.loadedWeight, .unloadWeight, .nos').removeClass('is-invalid');
+                }
             });
+
+            if (!isValid) {
+                alert(errorMessages.join('\n'));
+            }
+
+            return isValid;
         }
-
-        $('#addProductBtn').on('click', addProductRow);
-
-        $('#kato').on('input', function () {
-            recalcGridTotal();
-        });
-
-        $('#SupplierId').on('change', function () {
-            var selectedId = $(this).val();
-            var supplier = suppliers.find(s => s.Id == selectedId);
-            if (supplier) {
-                $('#Location').val(supplier.Location || '');
-            } else {
-                $('#Location').val('');
-            }
-        });
-
-        $(document).on('change', '.productId', function () {
-            var selectedId = $(this).val();
-            const row = $(this).closest('tr');
-            var product = products.find(p => p.Id == selectedId);
-            if (product) {
-                row.find('.rate').val(product.Rate);
-            } else {
-                row.find('.rate').val('');
-            }
-            row.find('.rate').trigger('input');
-        });
-
-        $(document).on('change', '.loadedWeight, .unloadWeight, .boraCount, .boraReport, .nos, .gross, .productReport, .rate', function () {
-            recalcRow($(this).closest('tr'));
-        });
-
-        $(document).on('click', '.removeRow', function () {
-            const row = $(this).closest('tr');
-            row.remove();
-            updateRowNumbers();
-            recalcGridTotal();
-        });
-
-        $(document).ready(function () {
-            if (!$('#Date').val()) {
-                var today = new Date();
-                var yyyy = today.getFullYear();
-                var mm = String(today.getMonth() + 1).padStart(2, '0');
-                var dd = String(today.getDate()).padStart(2, '0');
-                var formatted = yyyy + '-' + mm + '-' + dd;
-                $('#Date').val(formatted);
-            }
-
-            if ($('#productsTable tbody tr').length === 0) {
-                addProductRow();
-            }
-        });
     </script>
 }
