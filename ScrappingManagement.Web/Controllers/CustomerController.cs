@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScrappingManagement.Web.Data;
+using ScrappingManagement.Web.Dto;
 using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Controllers;
+
 public class CustomersController : Controller
 {
 	private readonly AppDbContext _context;
@@ -13,10 +15,22 @@ public class CustomersController : Controller
 		_context = context;
 	}
 
-	// GET: /Customers
 	public async Task<IActionResult> Index()
 	{
-		var customers = await _context.Customers.ToListAsync();
+		var customers = await _context.Customers.AsNoTracking()
+			    .Select(s => new CustomerListDto
+			    {
+				    Id = s.Id,
+				    Name = s.Name,
+				    Location = s.Location,
+				    DueAmount = _context.Invoices
+								   .Where(q => q.CustomerId == s.Id).AsNoTracking()
+								   .Sum(q => (decimal?)q.FinalAmount ?? 0)
+							- _context.Receipts
+								   .Where(p => p.CustomerId == s.Id).AsNoTracking()
+								   .Sum(p => (decimal?)p.Amount ?? 0)
+			    })
+			    .ToListAsync();
 		return View(customers);
 	}
 

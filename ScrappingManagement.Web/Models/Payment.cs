@@ -11,7 +11,7 @@ namespace ScrappingManagement.Web.Models
         public int SupplierId { get; set; }
 
         [Required]
-        public PaymentMode PaymentMode { get; set; } // Changed to enum type
+        public PaymentMode PaymentMode { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18, 2)")]

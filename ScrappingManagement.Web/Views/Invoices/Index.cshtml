@@ -1,12 +1,47 @@
-﻿@model List<Invoice>
-
+﻿@using System.Globalization
+@model ScrappingManagement.Web.Dto.PaginatedList<ScrappingManagement.Web.Models.Invoice>
 @{
     ViewData["Title"] = "Invoices";
+    var customers = ViewBag.Customers as List<ScrappingManagement.Web.Models.Customer>;
+
+    var inr = CultureInfo.GetCultureInfo("en-IN");
 }
 
-<h2>Invoices</h2>
-<a asp-action="Create" class="btn btn-success mt-3">Add Invoice</a>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Invoices</h2>
+    <p class="mb-0">
+        <a asp-action="Create" class="btn btn-primary">Create New</a>
+    </p>
+</div>
+<form asp-action="Index" method="get" class="mb-3">
+    <div class="row">
+        <div class="col-md-4">
+            <label for="customerId" class="form-label">Customer:</label>
+            <select name="customerId" id="customerId" class="form-select">
+                <option value="">All Customers</option>
+                @foreach (var customer in customers)
+                {
+                    <option value="@customer.Id" selected="@(ViewData["CurrentCustomerFilter"]?.ToString() == customer.Id.ToString())">@customer.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="fromDate" class="form-label">From Date:</label>
+            <input type="date" name="fromDate" id="fromDate" class="form-control" value="@ViewData["CurrentFromDateFilter"]" />
+        </div>
+        <div class="col-md-4">
+            <label for="toDate" class="form-label">To Date:</label>
+            <input type="date" name="toDate" id="toDate" class="form-control" value="@ViewData["CurrentToDateFilter"]" />
+        </div>
+    </div>
+    <div class="row mt-3">
+        <div class="col-md-12 text-end">
+            <button type="submit" class="btn btn-info">Filter</button>
+            <a asp-action="Index" class="btn btn-secondary">Clear Filter</a>
+        </div>
 
+    </div>
+</form>
 <table class="table table-bordered table-striped">
     <thead class="thead-dark">
         <tr>
@@ -14,7 +49,8 @@
             <th>Date</th>
             <th>Customer</th>
             <th>Location</th>
-            <th>Total</th>
+            <th>With GST</th>
+            <th>Total (INR)</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -26,7 +62,17 @@
                 <td>@invoice.Date.ToString("yyyy-MM-dd")</td>
                 <td>@invoice.Customer?.Name</td>
                 <td>@invoice.Location</td>
-                <td>@invoice.FinalAmount.ToString("C")</td>
+                <td>
+                    @if (invoice.WithGst)
+                    {
+                        <span class="badge bg-success">Yes</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">No</span>
+                    }
+                </td>
+                <td>@(invoice.FinalAmount.ToString("C", inr))</td>
                 <td>
                     <a asp-action="Details" asp-route-id="@invoice.Id" class="btn btn-sm btn-info">View</a>
                     <a asp-action="Edit" asp-route-id="@invoice.Id" class="btn btn-sm btn-warning">Edit</a>
@@ -36,3 +82,77 @@
     </tbody>
 </table>
 
+@{
+    var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+    var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+    var currentCustomer = ViewData["CurrentCustomerFilter"];
+    var currentFromDate = ViewData["CurrentFromDateFilter"];
+    var currentToDate = ViewData["CurrentToDateFilter"];
+    var currentPageSize = ViewData["CurrentPageSize"];
+    int current = Model.PageIndex;
+    int total = Model.TotalPages;
+    var pagesSet = new System.Collections.Generic.SortedSet<int>();
+    for (int i = 1; i <= Math.Min(3, total); i++) pagesSet.Add(i);
+    for (int i = Math.Max(1, current - 2); i <= Math.Min(total, current + 2); i++) pagesSet.Add(i);
+    for (int i = Math.Max(1, total - 2); i <= total; i++) pagesSet.Add(i);
+    var pageList = pagesSet.ToList();
+}
+<div class="d-flex justify-content-center mt-3">
+    <nav aria-label="Quotes pagination">
+        <ul class="pagination">
+            <li class="page-item @(current <= 1 ? "disabled" : "")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-pageNumber="@(current - 1)"
+                   asp-route-CustomerId="@currentCustomer"
+                   asp-route-fromDate="@currentFromDate"
+                   asp-route-toDate="@currentToDate"
+                   asp-route-pageSize="@currentPageSize">Previous</a>
+            </li>
+
+            @{
+                for (int i = 0; i < pageList.Count; i++)
+                {
+                    var p = pageList[i];
+                    var isActive = p == current;
+                    <li class="page-item @(isActive ? "active" : "")">
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-pageNumber="@p"
+                           asp-route-CustomerId="@currentCustomer"
+                           asp-route-fromDate="@currentFromDate"
+                           asp-route-toDate="@currentToDate"
+                           asp-route-pageSize="@currentPageSize">@p</a>
+                    </li>
+                    ;
+
+                    if (i < pageList.Count - 1 && pageList[i + 1] > p + 1)
+                    {
+                        <li class="page-item disabled"><span class="page-link">…</span></li>
+                        ;
+                    }
+                }
+            }
+
+            <li class="page-item @(current >= total ? "disabled" : "")">
+                <a class="page-link"
+                   asp-action="Index"
+                   asp-route-pageNumber="@(current + 1)"
+                   asp-route-CustomerId="@currentCustomer"
+                   asp-route-fromDate="@currentFromDate"
+                   asp-route-toDate="@currentToDate"
+                   asp-route-pageSize="@currentPageSize">Next</a>
+            </li>
+
+            <li class="page-item d-flex align-items-center ms-3">
+                <label for="pageSize" class="form-label mb-0 me-2">Show:</label>
+                <select name="pageSize" id="pageSize" class="form-select form-select-sm auto-submit" style="width: auto;">
+                    <option value="5" selected="@(ViewData["CurrentPageSize"]?.ToString() == "5")">5</option>
+                    <option value="10" selected="@(ViewData["CurrentPageSize"]?.ToString() == "10")">10</option>
+                    <option value="20" selected="@(ViewData["CurrentPageSize"]?.ToString() == "20")">20</option>
+                    <option value="50" selected="@(ViewData["CurrentPageSize"]?.ToString() == "50")">50</option>
+                </select>
+            </li>
+        </ul>
+    </nav>
+</div>

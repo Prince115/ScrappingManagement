@@ -1,32 +1,31 @@
-﻿@using ScrappingManagement.Web.Dto
-@model InvoiceViewModel
+﻿@using System.Text.Json
+@using System.Text.Json.Serialization
+@model ScrappingManagement.Web.Dto.InvoiceViewModel
 
 @{
     ViewData["Title"] = "Edit Invoice";
+    var productsJson = JsonSerializer.Serialize(Model.Products, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
 }
 
-<h2>Create Invoice</h2>
+<h2>Edit Invoice</h2>
 
 <form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+
     <div class="row mb-3">
         <div class="col-md-3">
             <label asp-for="CustomerId" class="form-label">Customer</label>
-            <select asp-for="CustomerId" class="form-select" required>
+            <select asp-for="CustomerId" id="CustomerId" class="form-select" asp-items="Model.Customers" required>
                 <option value="">-- Select Customer --</option>
-                @foreach (var supplier in Model.Customers)
-                {
-                    <option value="@supplier.Value">@supplier.Text</option>
-                }
             </select>
-
         </div>
         <div class="col-md-3">
             <label asp-for="Location" class="form-label">Location</label>
-            <input asp-for="Location" class="form-control" id="Location" />
+            <input asp-for="Location" id="Location" class="form-control" />
         </div>
         <div class="col-md-3">
             <label asp-for="Date" class="form-label">Date</label>
-            <input asp-for="Date" type="date" class="form-control" />
+            <input asp-for="Date" id="Date" type="date" class="form-control" />
         </div>
         <div class="col-md-3">
             <label asp-for="InvoiceNumber" class="form-label">Invoice Number</label>
@@ -34,68 +33,109 @@
         </div>
     </div>
 
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <div class="form-check mt-4">
+                <input id="withGstCheckbox" class="form-check-input" asp-for="WithGst" />
+                <label class="form-check-label" for="withGstCheckbox">Include GST</label>
+            </div>
+        </div>
+    </div>
+
     <h4>Products</h4>
 
-    <table class="table table-bordered" id="productTable">
-        <thead>
-            <tr>
-                <th>NO</th>
-                <th>Product</th>
-                <th>Weight</th>
-                <th>Rate</th>
-                <th>Amount</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody id="productTableBody">
-            @for (int i = 0; i < Model.Items.Count; i++)
-            {
+    <div class="table-responsive">
+        <table class="table table-bordered" id="productTable">
+            <thead>
                 <tr>
-                    <td>@(i + 1)</td>
-                    <td>
-                        @Html.DropDownListFor(model => model.Items[i].ProductId, Model.Products, "Select Product", new { @class = "form-control product-select" })
-                    </td>
-                    <td>
-                        <input type="number" step="0.01" name="Items[@i].Weight" class="form-control weight" value="@Model.Items[i].Weight" />
-                    </td>
-                    <td>
-                        <input type="number" step="0.01" name="Items[@i].Rate" class="form-control rate" value="@Model.Items[i].Rate" />
-                    </td>
-                    <td>
-                        <input type="text" class="form-control amount" name="Items[@i].Amount" value="@Model.Items[i].Amount" readonly />
-                    </td>
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Delete</button>
-                    </td>
+                    <th>NO</th>
+                    <th>Product</th>
+                    <th>Weight</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                    <th>Action</th>
                 </tr>
-            }
-        </tbody>
-        <tfoot>
-            <tr>
-                <td colspan="2" class="text-end">Total</td>
-                <td id="totalWeight">0</td>
-                <td></td>
-                <td id="totalAmount">0</td>
-                <td></td>
-            </tr>
-        </tfoot>
-    </table>
+            </thead>
+            <tbody id="productTableBody">
+                @for (int i = 0; i < (Model.Items?.Count ?? 0); i++)
+                {
+                    var item = Model.Items[i];
+                    <tr>
+                        <td class="row-no">@(i + 1)</td>
 
-    <button type="button" class="btn btn-secondary mb-3" onclick="addProductRow()">Add Product</button>
+                        <td>
+                            <input type="hidden" name="Items[@i].Id" value="@item.Id" />
+                            <input type="hidden" name="Items[@i].Deleted" value="false" class="deleted-input" />
+                            @Html.DropDownListFor(m => m.Items[i].ProductId, Model.Products, "-- Select Product --", new { @class = "form-control product-select" })
+                        </td>
+
+                        <td>
+                            <input type="number" step="0.01" name="Items[@i].Weight" class="form-control weight" value="@item.Weight" />
+                        </td>
+
+                        <td>
+                            <input type="number" step="0.01" name="Items[@i].Rate" class="form-control rate" value="@item.Rate" />
+                        </td>
+
+                        <td>
+                            <input type="number" step="0.01" name="Items[@i].Amount" class="form-control amount" readonly value="@item.Amount" />
+                        </td>
+
+                        <td>
+                            <button type="button" class="btn btn-danger btn-sm removeRow">Delete</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2" class="text-end">Total</td>
+                    <td id="totalWeight">0.00</td>
+                    <td></td>
+                    <td id="totalAmount">0.00</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <button type="button" class="btn btn-secondary mb-3" id="addProductBtn">Add Product</button>
+
     <div class="row">
         <div class="col-sm-6">
             <label>Note</label>
             <textarea asp-for="Note" class="form-control"></textarea>
         </div>
+
         <div class="col-sm-6">
             <div class="row justify-content-end">
                 <div class="col-md-3">
                     <label>Extra</label>
                     <input asp-for="PackagingCharge" id="packagingCharge" type="number" step="0.01" class="form-control" value="@Model.PackagingCharge" />
                 </div>
+                <div class="row justify-content-end">
+                    <div class="col-md-3 gst-field">
+                        <label>GST %</label>
+                        <input asp-for="GstPercentage" id="gstPercentage" type="number" step="0.01" class="form-control" value="@Model.GstPercentage" />
+                    </div>
+                    <div class="col-md-3 gst-field">
+                        <label>GST Value</label>
+                        <input asp-for="GstValue" id="gstValue" type="text" readonly class="form-control" />
+                    </div>
+                </div>
+                <div class="row justify-content-end">
+                    <div class="col-md-3 tcs-field">
+                        <label>TCS %</label>
+                        <input asp-for="TcsPercentage" id="tcsPercentage" type="number" step="0.01" class="form-control" value="@Model.TcsPercentage" />
+                    </div>
+                    <div class="col-md-3 tcs-field">
+                        <label>TCS Value</label>
+                        <input asp-for="TcsValue" id="tcsValue" type="text" readonly class="form-control" />
+                    </div>
+                </div>
                 <div class="col-md-3">
-                    <label>Final Amount</label>
-                    <input id="finalAmount" type="text" readonly class="form-control" />
+                    <label class="fw-bold">Final Amount</label>
+                    <input id="finalAmount" asp-for="FinalAmount" readonly class="form-control" />
                 </div>
             </div>
         </div>
@@ -109,171 +149,259 @@
 
 @section Scripts {
     <script>
-        var products = @Html.Raw(Json.Serialize(Model.Products));
+        $(function () {
+            var products = @Html.Raw(productsJson);
 
-        function addProductRow() {
-            var index = $('#productTableBody tr').length;
+            // Helpers
+            function refreshRowNames() {
+                $('#productTableBody tr').each(function (index) {
+                    var $tr = $(this);
+                    $tr.find('.row-no').text(index + 1);
 
-            var options = `<option value="">-- Select Product --</option>`;
-            products.forEach(p => {
-                options += `<option value="${p.value}">${p.text}</option>`;
+                    $tr.find('[name]').each(function () {
+                        var $el = $(this);
+                        var name = $el.attr('name');
+                        if (!name) return;
+                        var newName = name.replace(/Items\[\d+\]/g, 'Items[' + index + ']');
+                        $el.attr('name', newName);
+                    });
+                });
+            }
+
+            function recalcRow($tr) {
+                var weight = parseFloat($tr.find('.weight').val()) || 0;
+                var rate = parseFloat($tr.find('.rate').val()) || 0;
+                var amount = weight * rate;
+                $tr.find('.amount').val(amount.toFixed(2));
+                recalcTotals();
+            }
+
+            function recalcTotals() {
+                var totalWeight = 0, totalAmount = 0;
+                $('#productTableBody tr').each(function () {
+                    var $tr = $(this);
+                    if ($tr.hasClass('deleted')) return;
+                    totalWeight += parseFloat($tr.find('.weight').val()) || 0;
+                    totalAmount += parseFloat($tr.find('.amount').val()) || 0;
+                });
+
+                $('#totalWeight').text(totalWeight.toFixed(2));
+                $('#totalAmount').text(totalAmount.toFixed(2));
+
+                var packaging = parseFloat($('#packagingCharge').val()) || 0;
+                var subtotal = totalAmount + packaging;
+
+                var withGst = $('#withGstCheckbox').is(':checked');
+                var gstPerc = parseFloat($('#gstPercentage').val()) || 0;
+                var gstValue = 0;
+
+                if (withGst && gstPerc > 0) {
+                    gstValue = subtotal * (gstPerc / 100);
+                }
+                $('#gstValue').val(gstValue.toFixed(2));
+                var baseAmount = subtotal + parseFloat(gstValue);
+
+                // TCS
+                var tcsPerc = parseFloat($('#tcsPercentage').val()) || 0;
+                var tcsValue = 0;
+                if (tcsPerc > 0) {
+                    tcsValue = baseAmount * (tcsPerc / 100);
+                }
+                $('#tcsValue').val(tcsValue.toFixed(2));
+                var finalAmount = baseAmount + tcsValue;
+                $('#finalAmount').val(finalAmount.toFixed(2));
+            }
+
+            // Row operations
+            function addProductRow() {
+                var $lastVisible = $('#productTableBody tr:not(.deleted)').last();
+                if ($lastVisible.length) {
+                    // require last row filled
+                    var prod = $lastVisible.find('[name$=".ProductId"]').val();
+                    var weight = $lastVisible.find('[name$=".Weight"]').val();
+                    var rate = $lastVisible.find('[name$=".Rate"]').val();
+                    if (!prod || (!(weight && rate))) {
+                        alert('Please fill required fields in the last product row before adding a new one.');
+                        return;
+                    }
+                }
+
+                var index = $('#productTableBody tr').length;
+                var options = '<option value="">-- Select Product --</option>';
+                products.forEach(function (p) {
+                    options += '<option value="' + p.value + '">' + p.text + '</option>';
+                });
+
+                var $row = $('<tr>' +
+                    '<td class="row-no">' + (index + 1) + '</td>' +
+                    '<td>' +
+                        '<input type="hidden" name="Items[' + index + '].Id" value="0" />' +
+                        '<input type="hidden" name="Items[' + index + '].Deleted" value="false" class="deleted-input" />' +
+                        '<select name="Items[' + index + '].ProductId" class="form-control product-select">' + options + '</select>' +
+                    '</td>' +
+                    '<td><input type="number" step="0.01" name="Items[' + index + '].Weight" class="form-control weight" value="0" /></td>' +
+                    '<td><input type="number" step="0.01" name="Items[' + index + '].Rate" class="form-control rate" value="0" /></td>' +
+                    '<td><input type="number" step="0.01" name="Items[' + index + '].Amount" class="form-control amount" readonly /></td>' +
+                    '<td><button type="button" class="btn btn-danger btn-sm removeRow">Delete</button></td>' +
+                    '</tr>');
+
+                $('#productTableBody').append($row);
+                refreshRowNames();
+            }
+
+            function markRowDeleted($tr) {
+                $tr.find('.deleted-input').val('true');
+                $tr.addClass('deleted').hide();
+                refreshRowNames();
+                recalcTotals();
+            }
+
+            $('#addProductBtn').on('click', addProductRow);
+
+            $(document).on('change', '.product-select', function () {
+                var $tr = $(this).closest('tr');
+                var id = $(this).val();
+                if (!id) {
+                    $tr.find('.rate').val(0);
+                    recalcRow($tr);
+                    return;
+                }
+                $.get('@Url.Action("GetProduct","Invoices")', { id: id })
+                    .done(function (data) {
+                        var rate = data.rate !== undefined ? data.rate : (data.Rate !== undefined ? data.Rate : 0);
+                        $tr.find('.rate').val(rate);
+                        recalcRow($tr);
+                    })
+                    .fail(function () {
+                        $tr.find('.rate').val(0);
+                        recalcRow($tr);
+                    });
             });
 
-            var row = `<tr>
-                <td>${index + 1}</td>
-                <td><select name="Items[${index}].ProductId" class="form-select product-select" data-index="${index}" required>${options}</select></td>
-                <td><input type="number" step="0.01" name="Items[${index}].Weight" class="form-control weight" value="0" /></td>
-                <td><input type="number" step="0.01" name="Items[${index}].Rate" class="form-control rate" /></td>
-                <td><input type="text" class="form-control amount" name="Items[${index}].Amount" readonly /></td>
-                <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">Delete</button></td>
-            </tr>`;
+            $(document).on('input change', '.weight, .rate', function () {
+                recalcRow($(this).closest('tr'));
+            });
 
-            $('#productTableBody').append(row);
-                updateFooterTotals();
+            $(document).on('click', '.removeRow', function () {
+                var $tr = $(this).closest('tr');
+                // if existing item (id > 0) mark deleted; else remove DOM row
+                var idInput = $tr.find('input[name$=".Id"]');
+                var idVal = idInput.length ? parseInt(idInput.val() || '0', 10) : 0;
+                if (idVal && idVal > 0) {
+                    markRowDeleted($tr);
+                } else {
+                    $tr.remove();
+                    refreshRowNames();
+                    recalcTotals();
+                }
+            });
 
-        }
+            // Customer location fetch
+            $('#CustomerId').on('change', function () {
+                var id = $(this).val();
+                if (!id) {
+                    $('#Location').val('');
+                    return;
+                }
+                $.get('@Url.Action("GetCustomer","Invoices")', { id: id })
+                    .done(function (data) {
+                        var loc = data.location !== undefined ? data.location : (data.Location !== undefined ? data.Location : '');
+                        $('#Location').val(loc);
+                    });
+            });
 
-        function removeRow(button) {
-            $(button).closest('tr').remove();
-            updateRowNumbers();
-            calculateFinalAmount();
-            updateFooterTotals();
-        }
+            $('#withGstCheckbox').on('change', function () {
+                var checked = $(this).is(':checked');
+                if (checked) {
+                    $('.gst-field').show();
+                    $('.tcs-field').show();
+                } else {
+                    $('.gst-field').hide();
+                    $('.tcs-field').hide();
+                    $('#gstPercentage').val('');
+                    $('#gstValue').val('0.00');
+                    $('#tcsPercentage').val('');
+                    $('#tcsValue').val('0.00');
+                }
+                recalcTotals();
+            });
 
-        function updateRowNumbers() {
-            $('#productTableBody tr').each(function (i) {
-                $(this).find('td:first').text(i + 1);
-                $(this).find('select, input').each(function () {
-                    var name = $(this).attr('name');
-                    if (name) {
-                        var newName = name.replace(/\Items\[\d+\]/, `Items[${i}]`);
-                        $(this).attr('name', newName);
+            $('#packagingCharge, #gstPercentage, #tcsPercentage, #withGstCheckbox').on('input change', function () {
+                recalcTotals();
+            });
+
+            // initialization
+            $(document).ready(function () {
+                // ensure names are contiguous and recalc existing rows
+                refreshRowNames();
+                $('#productTableBody tr').each(function () {
+                    recalcRow($(this));
+                });
+
+                if (!$('#withGstCheckbox').is(':checked')) {
+                    $('.gst-field').hide();
+                    $('.tcs-field').hide();
+                }
+
+                // ensure at least one row exists for convenience
+                if ($('#productTableBody tr').length === 0) {
+                    addProductRow();
+                }
+            });
+
+            // form submit: validate visible rows
+            $('form').on('submit', function (e) {
+                var valid = true;
+                var messages = [];
+
+                if (!$('#CustomerId').val()) {
+                    valid = false;
+                    messages.push('Please select a customer.');
+                    $('#CustomerId').addClass('is-invalid');
+                } else {
+                    $('#CustomerId').removeClass('is-invalid');
+                }
+
+                $('#productTableBody tr').each(function () {
+                    var $tr = $(this);
+                    if ($tr.hasClass('deleted')) return;
+
+                    var prod = $tr.find('[name$=".ProductId"]').val();
+                    var weight = parseFloat($tr.find('[name$=".Weight"]').val() || '0');
+                    var rate = parseFloat($tr.find('[name$=".Rate"]').val() || '0');
+
+                    if (!prod) {
+                        valid = false;
+                        messages.push('Please select product for all rows.');
+                        $tr.find('[name$=".ProductId"]').addClass('is-invalid');
+                    } else {
+                        $tr.find('[name$=".ProductId"]').removeClass('is-invalid');
+                    }
+
+                    if (!(weight > 0)) {
+                        valid = false;
+                        messages.push('Weight must be greater than 0 for all rows.');
+                        $tr.find('[name$=".Weight"]').addClass('is-invalid');
+                    } else {
+                        $tr.find('[name$=".Weight"]').removeClass('is-invalid');
+                    }
+
+                    if (!(rate > 0)) {
+                        valid = false;
+                        messages.push('Rate must be greater than 0 for all rows.');
+                        $tr.find('[name$=".Rate"]').addClass('is-invalid');
+                    } else {
+                        $tr.find('[name$=".Rate"]').removeClass('is-invalid');
                     }
                 });
-            });
-        }
-        $(document).on('change', '.product-select', function () {
-            var selectedVal = $(this).val();
-            var row = $(this).closest('tr');
 
-            if (selectedVal) {
-                $.get('/Invoices/GetProduct', { id: selectedVal }, function (data) {
-                    row.find('.rate').val(data.rate);
-                    calculateRowAmount(row);
-                    calculateFinalAmount();
-                });
-            } else {
-                row.find('.rate').val(0);
-                calculateRowAmount(row);
-                calculateFinalAmount();
-            }
-        });
-
-        $(document).on('input', '.weight, .rate', function () {
-            var row = $(this).closest('tr');
-            calculateRowAmount(row);
-            calculateFinalAmount();
-        });
-
-        $('#packagingCharge').on('input', calculateFinalAmount);
-
-        function calculateRowAmount(row) {
-            var weight = parseFloat(row.find('.weight').val()) || 0;
-            var rate = parseFloat(row.find('.rate').val()) || 0;
-            var amount = weight * rate;
-            row.find('.amount').val(amount.toFixed(2));
-            updateFooterTotals();
-        }
-
-        function calculateFinalAmount() {
-            var total = 0;
-            $('#productTableBody tr').each(function () {
-                var amount = parseFloat($(this).find('.amount').val()) || 0;
-                total += amount;
-            });
-
-            var packagingCharge = parseFloat($('#packagingCharge').val()) || 0;
-            var finalAmount = total + packagingCharge;
-            $('#finalAmount').val(finalAmount.toFixed(2));
-        }
-        $(document).on('change', '#CustomerId', function () {
-            var customerId = $(this).val();
-            if (customerId) {
-                $.get('/Invoices/GetCustomer', { id: customerId }, function (data) {
-                    $('#Location').val(data.location);
-                });
-            } else {
-                $('#Location').val('');
-            }
-        });
-
-        $(document).ready(function () {
-            $('#CustomerId').select2({
-                theme: 'bootstrap-5',
-                width: 'resolve'
-            });
-            calculateFinalAmount();
-            updateFooterTotals();
-        });
-
-          $('form').on('submit', function (e) {
-            var isValid = true;
-            var errorMessages = [];
-
-            if (!$('#CustomerId').val()) {
-                isValid = false;
-                errorMessages.push('Please select a customer.');
-                $('#CustomerId').addClass('is-invalid');
-            } else {
-                $('#CustomerId').removeClass('is-invalid');
-            }
-
-            $('#productTableBody tr').each(function () {
-                var productSelect = $(this).find('.product-select');
-                var weightInput = $(this).find('.weight');
-
-                if (!productSelect.val()) {
-                    isValid = false;
-                    errorMessages.push('Please select a product for each row.');
-                    productSelect.addClass('is-invalid');
+                if (!valid) {
+                    e.preventDefault();
+                    alert(Array.from(new Set(messages)).join('\n'));
                 } else {
-                    productSelect.removeClass('is-invalid');
-                }
-
-                var weight = parseFloat(weightInput.val());
-                if (weight <= 0) {
-                    isValid = false;
-                    errorMessages.push('Weight must be greater than 0 for each row.');
-                    weightInput.addClass('is-invalid');
-                } else {
-                    weightInput.removeClass('is-invalid');
+                    refreshRowNames();
                 }
             });
-
-            // If invalid, prevent form submission and show error messages
-            if (!isValid) {
-                e.preventDefault();
-                alert(errorMessages.join('\n'));
-            }
         });
-        function updateFooterTotals() {
-            var totalWeight = 0;
-            var totalAmount = 0;
-
-            // Loop through each row and sum up the weight and amount
-            $('#productTableBody tr').each(function () {
-                var weight = parseFloat($(this).find('.weight').val()) || 0;
-                var amount = parseFloat($(this).find('.amount').val()) || 0;
-
-                totalWeight += weight;
-                totalAmount += amount;
-            });
-
-            // Update the footer with the new totals
-            $('#totalWeight').text(totalWeight.toFixed(2));
-            $('#totalAmount').text(totalAmount.toFixed(2));
-        }
-
-
     </script>
 }

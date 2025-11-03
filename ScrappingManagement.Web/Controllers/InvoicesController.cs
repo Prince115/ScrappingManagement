@@ -6,6 +6,7 @@ using ScrappingManagement.Web.Dto;
 using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Controllers;
+
 public class InvoicesController : Controller
 {
 	private readonly AppDbContext _context;
@@ -16,24 +17,50 @@ public class InvoicesController : Controller
 		_context = context;
 		_config = config;
 	}
-	public async Task<IActionResult> Index()
-	{
-		var invoices = await _context.Invoices
-		    .Include(i => i.Customer)
-		    .OrderByDescending(i => i.Date)
-		    .ToListAsync();
 
-		return View(invoices);
+	public async Task<IActionResult> Index(int? pageNumber, int? pageSize, int? customerId, DateTime? fromDate, DateTime? toDate)
+	{
+
+		int currentPageSize = pageSize ?? 20;
+		var quotes = _context.Invoices
+				   .Include(q => q.Customer)
+				   .Include(q => q.Items)
+				  .AsQueryable();
+
+		if (customerId.HasValue)
+		{
+			quotes = quotes.Where(q => q.CustomerId == customerId.Value);
+		}
+
+		if (fromDate.HasValue)
+		{
+			quotes = quotes.Where(q => q.Date >= fromDate.Value.Date);
+		}
+
+		if (toDate.HasValue)
+		{
+			quotes = quotes.Where(q => q.Date <= toDate.Value.Date);
+		}
+
+		quotes = quotes.OrderByDescending(q => q.Id);
+
+		ViewBag.Customers = await _context.Customers.OrderBy(s => s.Name).ToListAsync();
+		ViewData["CurrentCustomerFilter"] = customerId;
+		ViewData["CurrentFromDateFilter"] = fromDate?.ToString("yyyy-MM-dd");
+		ViewData["CurrentToDateFilter"] = toDate?.ToString("yyyy-MM-dd");
+		ViewData["CurrentPageSize"] = currentPageSize;
+
+		return View(await PaginatedList<Invoice>.CreateAsync(quotes.AsNoTracking(), pageNumber ?? 1, currentPageSize));
+
 	}
-	public async Task<IActionResult> CreateAsync()
+
+	public async Task<IActionResult> Create()
 	{
 		var viewModel = new InvoiceViewModel
 		{
 			Date = DateTime.Today,
-			Customers = _context.Customers
-			   .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name }).ToList(),
-			Products = _context.Products
-			   .Select(p => new SelectListItem { Value = p.Id.ToString(), Text = p.Name }).ToList(),
+			Customers = [.. _context.Customers.Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })],
+			Products = [.. _context.Products.Select(p => new SelectListItem { Value = p.Id.ToString(), Text = p.Name })],
 			Items = [new InvoiceItemViewModel()]
 		};
 		var lastInvoice = await _context.Invoices
@@ -49,12 +76,12 @@ public class InvoicesController : Controller
 			if (!string.IsNullOrEmpty(invoicePrefix))
 			{
 				var parts = lastInvoice.InvoiceNumber.Replace(invoicePrefix, "");
-				int.TryParse(parts, out lastNumber);
+				_ = int.TryParse(parts, out lastNumber);
 			}
 			else
 			{
 				var parts = lastInvoice.InvoiceNumber;
-				int.TryParse(parts, out lastNumber);
+				_ = int.TryParse(parts, out lastNumber);
 			}
 			nextNumber = lastNumber + 1;
 		}
@@ -79,6 +106,39 @@ public class InvoicesController : Controller
 
 			return View(vm);
 		}
+
+		// compute subtotal from items (prefer using Weight*Rate to avoid trusting client Amount)
+		var items = (vm.Items ?? [])
+			.Where(i => !i.Deleted && i.ProductId != 0)
+			.Select(i => new InvoiceItem
+			{
+				ProductId = i.ProductId,
+				Rate = i.Rate,
+				Weight = i.Weight,
+				Amount = i.Weight * i.Rate
+			})
+			.ToList();
+
+		var subtotal = items.Sum(i => i.Amount);
+		var packaging = vm.PackagingCharge;
+		var baseAmount = subtotal + packaging;
+
+		// GST
+		var gstValue = 0m;
+		if (vm.WithGst && vm.GstPercentage > 0)
+		{
+			gstValue = baseAmount * (vm.GstPercentage / 100m);
+			baseAmount += gstValue;
+		}
+
+		// TCS (apply on baseAmount which already includes GST and packaging)
+		var tcsValue = 0m;
+		if (vm.TcsPercentage > 0)
+		{
+			tcsValue = baseAmount * (vm.TcsPercentage / 100m);
+			baseAmount += tcsValue;
+		}
+
 		var invoice = new Invoice
 		{
 			InvoiceNumber = vm.InvoiceNumber,
@@ -87,16 +147,14 @@ public class InvoicesController : Controller
 			Location = vm.Location,
 			Note = vm.Note,
 			PackagingCharge = vm.PackagingCharge,
-			Items = [.. vm.Items.Select(i => new InvoiceItem
-			{
-				ProductId = i.ProductId,
-				Rate = i.Rate,
-				Weight = i.Weight,
-				Amount = i.Amount
-			})]
+			GstPercentage = vm.GstPercentage,
+			GstValue = gstValue,
+			WithGst = vm.WithGst,
+			TcsPercentage = vm.TcsPercentage,
+			TcsValue = tcsValue,
+			FinalAmount = baseAmount,
+			Items = items
 		};
-
-		invoice.FinalAmount = invoice.Items.Sum(i => i.Rate * i.Weight) + invoice.PackagingCharge;
 
 		_context.Invoices.Add(invoice);
 		await _context.SaveChangesAsync();
@@ -119,9 +177,13 @@ public class InvoicesController : Controller
 			Date = invoice.Date,
 			CustomerId = invoice.CustomerId,
 			Location = invoice.Location,
+			GstPercentage = invoice.GstPercentage,
+			GstValue = invoice.GstValue,
+			WithGst = invoice.WithGst,
 			Note = invoice.Note,
+			FinalAmount = invoice.FinalAmount,
 			PackagingCharge = invoice.PackagingCharge,
-			Items = [.. invoice.Items.Select(i => new InvoiceItemViewModel
+			Items = [.. invoice.Items!.Select(i => new InvoiceItemViewModel
 			{
 				ProductId = i.ProductId,
 				Weight = i.Weight,
@@ -159,31 +221,85 @@ public class InvoicesController : Controller
 		if (invoice == null)
 			return NotFound();
 
-		// Update main invoice data
 		invoice.InvoiceNumber = vm.InvoiceNumber;
 		invoice.Date = vm.Date;
 		invoice.CustomerId = vm.CustomerId;
 		invoice.Location = vm.Location;
 		invoice.Note = vm.Note;
 		invoice.PackagingCharge = vm.PackagingCharge;
+		invoice.WithGst = vm.WithGst;
+		invoice.GstPercentage = vm.GstPercentage;
 
-		// Remove existing items
-		_context.InvoiceItems.RemoveRange(invoice.Items);
-
-		// Add updated items
-		invoice.Items = vm.Items.Select(i => new InvoiceItem
+		// Sync items similar to Quotes.Edit pattern:
+		var incoming = vm.Items ?? [];
+		var deletedIds = incoming.Where(x => x.Deleted && x.Id != 0).Select(x => x.Id).ToHashSet();
+		if (deletedIds.Count != 0)
 		{
-			ProductId = i.ProductId,
-			Weight = i.Weight,
-			Amount = i.Amount,
-			Rate = i.Rate
-		}).ToList();
+			var toDelete = invoice.Items!.Where(ii => deletedIds.Contains(ii.Id)).ToList();
+			if (toDelete.Count != 0)
+			{
+				_context.InvoiceItems.RemoveRange(toDelete);
+				invoice.Items = [.. invoice.Items!.Where(ii => !deletedIds.Contains(ii.Id))];
+			}
+		}
 
-		// Recalculate final amount
-		invoice.FinalAmount = invoice.Items.Sum(i => i.Rate * i.Weight) + vm.PackagingCharge;
+		var incomingIds = incoming.Where(x => x.Id != 0 && !x.Deleted).Select(x => x.Id).ToHashSet();
+		var implicitlyRemoved = invoice.Items!.Where(ii => !incomingIds.Contains(ii.Id)).ToList();
+		if (implicitlyRemoved.Count != 0)
+		{
+			_context.InvoiceItems.RemoveRange(implicitlyRemoved);
+			invoice.Items = [.. invoice.Items!.Where(ii => incomingIds.Contains(ii.Id))];
+		}
+
+		foreach (var itemVm in incoming.Where(i => !i.Deleted))
+		{
+			if (itemVm.Id == 0)
+			{
+				invoice.Items!.Add(new InvoiceItem
+				{
+					ProductId = itemVm.ProductId,
+					Weight = itemVm.Weight,
+					Rate = itemVm.Rate,
+					Amount = itemVm.Weight * itemVm.Rate
+				});
+			}
+			else
+			{
+				var existing = invoice.Items!.FirstOrDefault(ii => ii.Id == itemVm.Id);
+				if (existing != null)
+				{
+					existing.ProductId = itemVm.ProductId;
+					existing.Weight = itemVm.Weight;
+					existing.Rate = itemVm.Rate;
+					existing.Amount = itemVm.Weight * itemVm.Rate;
+				}
+			}
+		}
+
+		var subtotal = invoice.Items!.Sum(i => i.Amount);
+		var baseAmount = subtotal + invoice.PackagingCharge;
+
+		var gstValue = 0m;
+		if (invoice.WithGst && invoice.GstPercentage > 0)
+		{
+			gstValue = baseAmount * (invoice.GstPercentage / 100m);
+			baseAmount += gstValue;
+		}
+		invoice.GstValue = gstValue;
+
+		var tcsValue = 0m;
+		invoice.TcsPercentage = vm.TcsPercentage;
+		if (invoice.TcsPercentage > 0)
+		{
+			tcsValue = baseAmount * (invoice.TcsPercentage / 100m);
+			baseAmount += tcsValue;
+		}
+		invoice.TcsValue = tcsValue;
+
+		invoice.FinalAmount = baseAmount;
 
 		await _context.SaveChangesAsync();
-		return RedirectToAction("Details", new { id = invoice.Id });
+		return RedirectToAction("Index");
 	}
 
 	[HttpGet]
@@ -211,6 +327,4 @@ public class InvoicesController : Controller
 
 		return Json(product);
 	}
-
-
 }

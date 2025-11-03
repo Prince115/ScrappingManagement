@@ -28,7 +28,6 @@ namespace ScrappingManagement.Web.Controllers
 					   .Include(q => q.QuoteProducts)
 					  .AsQueryable();
 
-			// Apply filters
 			if (supplierId.HasValue)
 			{
 				quotes = quotes.Where(q => q.SupplierId == supplierId.Value);

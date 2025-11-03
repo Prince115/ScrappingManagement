@@ -13,4 +13,12 @@ public class Invoice
 	public Customer Customer { get; set; }
 
 	public List<InvoiceItem>? Items { get; set; }
+
+	public bool WithGst { get; set; } = false; // Default false
+	public decimal GstPercentage { get; set; } = 0m;
+	public decimal GstValue { get; set; } = 0m;
+
+	// Added TCS properties
+	public decimal TcsPercentage { get; set; } = 0m;
+	public decimal TcsValue { get; set; } = 0m;
 }
