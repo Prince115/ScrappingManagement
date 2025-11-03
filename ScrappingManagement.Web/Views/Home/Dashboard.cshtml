@@ -1,17 +1,19 @@
 ﻿@using ScrappingManagement.Web.Dto
+@using System.Globalization
 @model DashboardViewModel
 
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "Dashboard"; 
+    var inr = CultureInfo.GetCultureInfo("en-IN");
 }
 
 <h2 class="mb-4">Dashboard</h2>
 
 <div class="row mb-4">
     <div class="col-md-3">
-        <div class="card text-white bg-white">
+        <div class="card text-white bg-primary">
             <div class="card-body">
-                <h5><a asp-action="index" asp-controller="customers">Total Customers</a></h5>
+                <h5>Total Customers</h5>
                 <h3>@Model.TotalCustomers</h3>
             </div>
         </div>
@@ -19,7 +21,7 @@
     <div class="col-md-3">
         <div class="card text-white bg-success">
             <div class="card-body">
-                <h5><a asp-action="index" asp-controller="invoices" class="link-">Total Invoices</a></h5>
+                <h5>Total Invoices</h5>
                 <h3>@Model.TotalInvoices</h3>
             </div>
         </div>
@@ -27,7 +29,7 @@
     <div class="col-md-3">
         <div class="card text-white bg-info">
             <div class="card-body">
-                <h5><a asp-action="index" asp-controller="suppliers">Total Suppliers</a></h5>
+                <h5>Total Suppliers</h5>
                 <h3>@Model.TotalSuppliers</h3>
             </div>
         </div>
@@ -35,8 +37,131 @@
     <div class="col-md-3">
         <div class="card text-white bg-warning">
             <div class="card-body">
-                <h5><a asp-action="index" asp-controller="quotes">Total Quotes</a></h5>
+                <h5>Total Quotes</h5>
                 <h3>@Model.TotalQuotes</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5>Total Invoice Amount</h5>
+                <h3>@Model.TotalInvoiceAmount.ToString("C",inr)</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5>Total Received Amount</h5>
+                <h3>@Model.TotalReceivedAmount.ToString("C",inr)</h3>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-danger">
+            <div class="card-body">
+                <h5>Total Due Amount</h5>
+                <h3>@Model.TotalDueAmount.ToString("C",inr)</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form asp-action="Dashboard" method="get" class="mb-4">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="startDate">Start Date:</label>
+                <input type="date" id="startDate" name="startDate" class="form-control" value="@Model.StartDate?.ToString("yyyy-MM-dd")" />
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="endDate">End Date:</label>
+                <input type="date" id="endDate" name="endDate" class="form-control" value="@Model.EndDate?.ToString("yyyy-MM-dd")" />
+            </div>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary">Apply Filter</button>
+            <a asp-action="Dashboard" class="btn btn-secondary ms-2">Clear Filter</a>
+        </div>
+    </div>
+</form>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Recent Invoices</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.RecentInvoices.Any())
+                {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Invoice Number</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var invoice in Model.RecentInvoices)
+                            {
+                                <tr>
+                                    <td><a asp-controller="Invoices" asp-action="Details" asp-route-id="@invoice.Id">@invoice.InvoiceNumber</a></td>
+                                    <td>@invoice.CustomerName</td>
+                                    <td>@invoice.Date.ToShortDateString()</td>
+                                    <td>@invoice.FinalAmount.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>No recent invoices found.</p>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Top Products</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.TopProducts.Any())
+                {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Total Weight</th>
+                                <th>Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var product in Model.TopProducts)
+                            {
+                                <tr>
+                                    <td>@product.ProductName</td>
+                                    <td>@product.TotalWeight</td>
+                                    <td>@product.TotalRevenue.ToString("C")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>No top products found.</p>
+                }
             </div>
         </div>
     </div>
