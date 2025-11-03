@@ -5,7 +5,7 @@ namespace ScrappingManagement.Web.Models
         Cash,
         BankTransfer,
         Cheque,
-        Online
+        GPay
     }
 
     public enum QuoteStatus

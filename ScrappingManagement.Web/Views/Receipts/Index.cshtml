@@ -82,6 +82,9 @@
                 @Html.DisplayNameFor(model => model.Receipts.First().Amount)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.Receipts.First().WithGst)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Receipts.First().Description)
             </th>
             <th></th>
@@ -105,6 +108,9 @@
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Amount)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.WithGst)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Description)
