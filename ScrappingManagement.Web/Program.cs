@@ -20,9 +20,9 @@ namespace ScrappingManagement.Web
 			builder.Services.AddTransient<WhatsAppInvoiceService>();
 			builder.Services.ConfigureApplicationCookie(options =>
 			{
-				options.ExpireTimeSpan = TimeSpan.FromDays(365);  
-				options.SlidingExpiration = true;  
-				options.LoginPath = "/Identity/Account/Login";  
+				options.ExpireTimeSpan = TimeSpan.FromDays(365);
+				options.SlidingExpiration = true;
+				options.LoginPath = "/Identity/Account/Login";
 				options.AccessDeniedPath = "/Identity/Account/AccessDenied";
 			});
 
@@ -49,9 +49,8 @@ namespace ScrappingManagement.Web
 				    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 			}
 
-			// Add ASP.NET Core Identity with roles
 			builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-				.AddRoles<IdentityRole>() // Add this line to enable roles
+				.AddRoles<IdentityRole>()
 				.AddEntityFrameworkStores<ApplicationDbContext>();
 
 			var app = builder.Build();
@@ -78,10 +77,10 @@ namespace ScrappingManagement.Web
 					if (adminUser == null)
 					{
 						adminUser = new IdentityUser { UserName = "admin@ambitinfoway.com", Email = "admin@ambitinfoway.com", EmailConfirmed = true };
-						await userManager.CreateAsync(adminUser, "Ambit@1234");  
+						await userManager.CreateAsync(adminUser, "Ambit@1234");
 						await userManager.AddToRoleAsync(adminUser, "Admin");
 					}
-				}).Wait(); 
+				}).Wait();
 			}
 
 			if (true || app.Environment.IsDevelopment())

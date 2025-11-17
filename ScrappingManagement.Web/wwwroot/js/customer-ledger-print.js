@@ -1,11 +1,9 @@
 $(document).ready(function () {
-    // Initialize select2
     $('#selectedCustomerId').select2({
         theme: "bootstrap-5",
         placeholder: "-- Select Customer --",
         width: 'resolve'
     });
-   // $('#selectedCustomerId').next('.select2').find('.selection').addClass('form-control');
 
     // Clear button functionality
     $('a.btn-secondary').on('click', function () {
@@ -15,7 +13,6 @@ $(document).ready(function () {
         $(this).closest('form').submit();
     });
 
-    // Print functionality
     $('#printLedgerBtn').on('click', function () {
         var printContents = $('#ledgerContent').html();
         var selectedCustomerName = $('#selectedCustomerId option:selected').text().trim();

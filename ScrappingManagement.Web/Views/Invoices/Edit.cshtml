@@ -31,14 +31,19 @@
             <label asp-for="InvoiceNumber" class="form-label">Invoice Number</label>
             <input asp-for="InvoiceNumber" readonly class="form-control" />
         </div>
-    </div>
-
-    <div class="row mb-3">
         <div class="col-md-3">
             <div class="form-check mt-4">
                 <input id="withGstCheckbox" class="form-check-input" asp-for="WithGst" />
                 <label class="form-check-label" for="withGstCheckbox">Include GST</label>
             </div>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="BookNo" class="form-label">Book Number</label>
+            <input asp-for="BookNo" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="BillNo" class="form-label">Bill Number</label>
+            <input asp-for="BillNo" class="form-control" />
         </div>
     </div>
 
@@ -266,7 +271,7 @@
                     recalcRow($tr);
                     return;
                 }
-                $.get('@Url.Action("GetProduct","Invoices")', { id: id })
+                $.get('@Url.Action("GetProduct", "Invoices")', { id: id })
                     .done(function (data) {
                         var rate = data.rate !== undefined ? data.rate : (data.Rate !== undefined ? data.Rate : 0);
                         $tr.find('.rate').val(rate);
@@ -303,7 +308,7 @@
                     $('#Location').val('');
                     return;
                 }
-                $.get('@Url.Action("GetCustomer","Invoices")', { id: id })
+                $.get('@Url.Action("GetCustomer", "Invoices")', { id: id })
                     .done(function (data) {
                         var loc = data.location !== undefined ? data.location : (data.Location !== undefined ? data.Location : '');
                         $('#Location').val(loc);

@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ScrappingManagement.Web.Models;
+
 public class Quote
 {
 	public int Id { get; set; }
-    public string BillNumber { get; set; } = string.Empty;  
+	public string BillNumber { get; set; } = string.Empty;
 
 	public DateTime Date { get; set; } = DateTime.UtcNow;
 	public string Location { get; set; } = string.Empty;
@@ -18,5 +19,6 @@ public class Quote
 	public decimal Total { get; set; }
 	public decimal FinalTotal { get; set; }
 	public decimal Kato { get; set; }
-    public QuoteStatus Status { get; set; } = QuoteStatus.ReportPending; 
+	public string? Note { get; set; }
+	public QuoteStatus Status { get; set; } = QuoteStatus.ReportPending;
 }

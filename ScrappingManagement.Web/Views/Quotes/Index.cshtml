@@ -195,6 +195,13 @@
 
             $('.status-cell').on('dblclick', function () {
                 const cell = $(this);
+                const currentStatus = cell.data('current-status'); 
+
+                 if (currentStatus === 'Completed') {
+                     alert('Quote is already completed');
+                     return; 
+                 }
+
                 cell.find('.status-label').addClass('d-none');
                 cell.find('.status-edit').removeClass('d-none');
             });

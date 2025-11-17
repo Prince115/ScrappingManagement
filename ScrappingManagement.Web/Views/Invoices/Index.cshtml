@@ -46,11 +46,12 @@
     <thead class="thead-dark">
         <tr>
             <th>Invoice #</th>
+            <th>Book #/ Bill #</th>
             <th>Date</th>
             <th>Customer</th>
             <th>Location</th>
             <th>With GST</th>
-            <th>Total (INR)</th>
+            <th>Total</th>
             <th>Actions</th>
         </tr>
     </thead>
@@ -59,6 +60,7 @@
         {
             <tr>
                 <td>@invoice.InvoiceNumber</td>
+                <td>@((invoice.BookNo ?? "-") + " / " + (invoice.BillNo ?? "-"))</td>
                 <td>@invoice.Date.ToString("yyyy-MM-dd")</td>
                 <td>@invoice.Customer?.Name</td>
                 <td>@invoice.Location</td>

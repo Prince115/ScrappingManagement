@@ -3,22 +3,30 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ScrappingManagement.Web.Data;
 using ScrappingManagement.Web.Dto;
+using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Controllers
 {
 	[Authorize(Roles = "Admin,User")]
-	public class CustomerLedgerController(AppDbContext context) : Controller
+	public class ReportController : Controller
 	{
-		private readonly AppDbContext _context = context;
+		private readonly AppDbContext _context;
 
-		public async Task<IActionResult> Index(
-			 int? selectedCustomerId,
-			 DateTime? fromDate,
-			 DateTime? toDate)
+		public ReportController(AppDbContext context)
+		{
+			_context = context;
+		}
+
+		[HttpGet("CustomerItems")]
+		[Route("CustomerItems")]
+		public async Task<IActionResult> CustomerItems(
+		  int? selectedCustomerId,
+		  DateTime? fromDate,
+		  DateTime? toDate)
 		{
 			ViewBag.Customers = await _context.Customers.OrderBy(s => s.Name).ToListAsync();
 
-			var model = new CustomerLedgerDtos
+			var model = new CustomerInvoiceWithItems
 			{
 				CustomerId = selectedCustomerId,
 				FromDate = fromDate,
@@ -34,16 +42,24 @@ namespace ScrappingManagement.Web.Controllers
 
 				var Invoices = _context.Invoices
 				    .Where(q => q.CustomerId == selectedCustomerId.Value)
+				    .Include(q => q.Items)
 				    .Select(q => new LedgerEntryDto
 				    {
 					    Date = q.Date,
 					    Type = "Invoice",
 					    Description = q.Id.ToString(),
 					    Debit = q.FinalAmount,
+					    Credit = 0,
+					    DocumentId = q.Id,
 					    IsWithGst = q.WithGst,
 					    BillNo = (q.BookNo ?? "-") + " / " + (q.BillNo ?? "-"),
-					    Credit = 0,
-					    DocumentId = q.Id
+					    Items = q.Items!.Select(i => new InvoiceItems
+					    {
+						    Name = i.Product.Name,
+						    Weight = i.Weight,
+						    Rate = i.Rate,
+						    Amount = i.Amount
+					    }).ToList()
 				    });
 
 				var Receipts = _context.Receipts

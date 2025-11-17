@@ -123,7 +123,6 @@ public class InvoicesController : Controller
 		var packaging = vm.PackagingCharge;
 		var baseAmount = subtotal + packaging;
 
-		// GST
 		var gstValue = 0m;
 		if (vm.WithGst && vm.GstPercentage > 0)
 		{
@@ -131,7 +130,6 @@ public class InvoicesController : Controller
 			baseAmount += gstValue;
 		}
 
-		// TCS (apply on baseAmount which already includes GST and packaging)
 		var tcsValue = 0m;
 		if (vm.TcsPercentage > 0)
 		{
@@ -151,6 +149,8 @@ public class InvoicesController : Controller
 			GstValue = gstValue,
 			WithGst = vm.WithGst,
 			TcsPercentage = vm.TcsPercentage,
+			BillNo = vm.BillNo,
+			BookNo = vm.BookNo,
 			TcsValue = tcsValue,
 			FinalAmount = baseAmount,
 			Items = items
@@ -181,6 +181,8 @@ public class InvoicesController : Controller
 			GstValue = invoice.GstValue,
 			WithGst = invoice.WithGst,
 			Note = invoice.Note,
+			BillNo = invoice.BillNo,
+			BookNo = invoice.BookNo,
 			FinalAmount = invoice.FinalAmount,
 			PackagingCharge = invoice.PackagingCharge,
 			Items = [.. invoice.Items!.Select(i => new InvoiceItemViewModel
@@ -221,7 +223,6 @@ public class InvoicesController : Controller
 		if (invoice == null)
 			return NotFound();
 
-		invoice.InvoiceNumber = vm.InvoiceNumber;
 		invoice.Date = vm.Date;
 		invoice.CustomerId = vm.CustomerId;
 		invoice.Location = vm.Location;
@@ -229,8 +230,9 @@ public class InvoicesController : Controller
 		invoice.PackagingCharge = vm.PackagingCharge;
 		invoice.WithGst = vm.WithGst;
 		invoice.GstPercentage = vm.GstPercentage;
+		invoice.BillNo = vm.BillNo;
+		invoice.BookNo = vm.BookNo;
 
-		// Sync items similar to Quotes.Edit pattern:
 		var incoming = vm.Items ?? [];
 		var deletedIds = incoming.Where(x => x.Deleted && x.Id != 0).Select(x => x.Id).ToHashSet();
 		if (deletedIds.Count != 0)

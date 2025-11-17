@@ -6,17 +6,18 @@ namespace ScrappingManagement.Web.Dto;
 public class InvoiceViewModel
 {
 	public int Id { get; set; }
-	public string InvoiceNumber { get; set; }
+	public string InvoiceNumber { get; set; } = "";
 	public DateTime Date { get; set; }
 	public int CustomerId { get; set; }
-	public string Location { get; set; }
+	public string Location { get; set; } = "";
+	public string BillNo { get; set; } = "";
+	public string BookNo { get; set; } = "";
 	public string? Note { get; set; }
 	public decimal PackagingCharge { get; set; }
 	public bool WithGst { get; set; } = false;
 	public decimal GstPercentage { get; set; } = 0m;
 	public decimal GstValue { get; set; } = 0m;
 
-	// Added FinalAmount and TCS fields for binding
 	public decimal FinalAmount { get; set; }
 	public decimal TcsPercentage { get; set; } = 0m;
 	public decimal TcsValue { get; set; } = 0m;
@@ -36,4 +37,10 @@ public class InvoiceItemViewModel
 	public decimal Weight { get; set; }
 	public decimal Rate { get; set; }
 	public decimal Amount { get; set; }
+}
+
+public class InvoiceItems : InvoiceItemViewModel
+{
+
+	public string Name { get; set; }
 }

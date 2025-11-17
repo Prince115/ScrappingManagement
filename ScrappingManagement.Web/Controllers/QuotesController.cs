@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ScrappingManagement.Web.Data;
 using ScrappingManagement.Web.Dto;
+using ScrappingManagement.Web.Helpers;
 using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Controllers
@@ -81,7 +82,7 @@ namespace ScrappingManagement.Web.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create([Bind("Date,Location,SupplierId,Total,FinalTotal,Kato,Status,BillNumber")] Quote quote, List<QuoteProduct> quoteProducts)
+		public async Task<IActionResult> Create([Bind("Date,Location,SupplierId,Total,FinalTotal,Kato,Note,Status,BillNumber")] Quote quote, List<QuoteProduct> quoteProducts)
 		{
 			if (ModelState.IsValid)
 			{
@@ -94,6 +95,17 @@ namespace ScrappingManagement.Web.Controllers
 				quote.BillNumber = nextBillNumberInt.ToString();
 				quote.QuoteProducts = quoteProducts;
 				_context.Quotes.Add(quote);
+				if (quote.Status == QuoteStatus.Completed)
+				{
+					_context.Payments.Add(new Payment
+					{
+						Amount = quote.FinalTotal,
+						Date = DateTime.UtcNow.ToIndianTime(),
+						SupplierId = quote.SupplierId,
+						PaymentMode = PaymentMode.Cash,
+						Description = "Auto Created"
+					});
+				}
 				await _context.SaveChangesAsync();
 				return RedirectToAction(nameof(Index));
 			}
@@ -121,6 +133,17 @@ namespace ScrappingManagement.Web.Controllers
 				if (Enum.TryParse<QuoteStatus>(dto.Status, out var parsedStatus))
 				{
 					quote.Status = parsedStatus;
+					if (parsedStatus == QuoteStatus.Completed)
+					{
+						_context.Payments.Add(new Payment
+						{
+							Amount = quote.FinalTotal,
+							Date = DateTime.UtcNow.ToIndianTime(),
+							SupplierId = quote.SupplierId,
+							PaymentMode = PaymentMode.Cash,
+							Description = "Auto Created"
+						});
+					}
 					_context.SaveChanges();
 					return Ok(new { success = true });
 				}
@@ -138,7 +161,6 @@ namespace ScrappingManagement.Web.Controllers
 		{
 			if (id == null) return NotFound();
 
-
 			var quote = await _context.Quotes
 			    .Where(q => q.Id == id)
 			    .Select(q => new QuoteDetailDto
@@ -149,6 +171,7 @@ namespace ScrappingManagement.Web.Controllers
 				    SupplierName = q.Supplier.Name,
 				    FinalTotal = q.FinalTotal,
 				    BillNumber = q.BillNumber,
+				    Note = q.Note,
 				    Kato = q.Kato,
 				    Total = q.Total,
 				    Status = q.Status, // Add Status
@@ -206,7 +229,7 @@ namespace ScrappingManagement.Web.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Location,SupplierId,Total,FinalTotal,Kato,Status")] Quote quote, List<QuoteProduct> quoteProducts)
+		public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Location,SupplierId,Total,FinalTotal,Note,Kato,Status")] Quote quote, List<QuoteProduct> quoteProducts)
 		{
 			if (id != quote.Id)
 			{
@@ -226,14 +249,13 @@ namespace ScrappingManagement.Web.Controllers
 						return NotFound();
 					}
 
-					// Update main quote properties
 					existingQuote.Date = quote.Date;
 					existingQuote.Location = quote.Location;
 					existingQuote.SupplierId = quote.SupplierId;
 					existingQuote.FinalTotal = quote.FinalTotal;
 					existingQuote.Kato = quote.Kato;
 					existingQuote.Total = quote.Total;
-					existingQuote.Status = quote.Status;
+					existingQuote.Note = quote.Note;
 
 					foreach (var product in quoteProducts)
 					{
@@ -318,7 +340,8 @@ namespace ScrappingManagement.Web.Controllers
 					Total = q.Total,
 					BillNumber = q.BillNumber,
 					Kato = q.Kato,
-					Status = q.Status, // Add Status
+					Status = q.Status,
+					Note = q.Note,
 					Products = q.QuoteProducts
 					  .Join(_context.Products,
 						   qp => qp.ProductId,

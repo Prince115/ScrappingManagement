@@ -6,16 +6,11 @@ using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Controllers;
 
-public class CustomersController : Controller
+public class CustomersController(AppDbContext context) : Controller
 {
-	private readonly AppDbContext _context;
+	private readonly AppDbContext _context = context;
 
-	public CustomersController(AppDbContext context)
-	{
-		_context = context;
-	}
-
-	public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index()
 	{
 		var customers = await _context.Customers.AsNoTracking()
 			    .Select(s => new CustomerListDto
@@ -23,7 +18,8 @@ public class CustomersController : Controller
 				    Id = s.Id,
 				    Name = s.Name,
 				    Location = s.Location,
-				    DueAmount = _context.Invoices
+				    DueAmount = (s.OpeningBalance ?? 0) 
+							+ _context.Invoices
 								   .Where(q => q.CustomerId == s.Id).AsNoTracking()
 								   .Sum(q => (decimal?)q.FinalAmount ?? 0)
 							- _context.Receipts
@@ -34,13 +30,11 @@ public class CustomersController : Controller
 		return View(customers);
 	}
 
-	// GET: /Customers/Create
 	public IActionResult Create()
 	{
 		return View();
 	}
 
-	// POST: /Customers/Create
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> Create(Customer customer)
@@ -55,7 +49,6 @@ public class CustomersController : Controller
 		return View(customer);
 	}
 
-	// GET: /Customers/Edit/5
 	public async Task<IActionResult> Edit(int id)
 	{
 		var customer = await _context.Customers.FindAsync(id);
@@ -63,7 +56,6 @@ public class CustomersController : Controller
 		return View(customer);
 	}
 
-	// POST: /Customers/Edit/5
 	[HttpPost]
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> Edit(int id, Customer customer)
@@ -80,7 +72,6 @@ public class CustomersController : Controller
 		return View(customer);
 	}
 
-	// GET: /Customers/Delete/5
 	public async Task<IActionResult> Delete(int id)
 	{
 		var customer = await _context.Customers.FindAsync(id);
@@ -89,7 +80,6 @@ public class CustomersController : Controller
 		return View(customer);
 	}
 
-	// POST: /Customers/Delete/5
 	[HttpPost, ActionName("Delete")]
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> DeleteConfirmed(int id)

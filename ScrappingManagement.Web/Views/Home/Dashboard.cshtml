@@ -45,7 +45,7 @@
 </div>
 
 <div class="row mb-4">
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card text-white bg-primary">
             <div class="card-body">
                 <h5>Total Invoice Amount</h5>
@@ -53,7 +53,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card text-white bg-success">
             <div class="card-body">
                 <h5>Total Received Amount</h5>
@@ -61,7 +61,7 @@
             </div>
         </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
         <div class="card text-white bg-danger">
             <div class="card-body">
                 <h5>Total Due Amount</h5>
@@ -117,7 +117,7 @@
                                     <td><a asp-controller="Invoices" asp-action="Details" asp-route-id="@invoice.Id">@invoice.InvoiceNumber</a></td>
                                     <td>@invoice.CustomerName</td>
                                     <td>@invoice.Date.ToShortDateString()</td>
-                                    <td>@invoice.FinalAmount.ToString("C")</td>
+                                    <td>@invoice.FinalAmount.ToString("C",inr)</td>
                                 </tr>
                             }
                         </tbody>
@@ -152,7 +152,7 @@
                                 <tr>
                                     <td>@product.ProductName</td>
                                     <td>@product.TotalWeight</td>
-                                    <td>@product.TotalRevenue.ToString("C")</td>
+                                    <td>@product.TotalRevenue.ToString("C",inr)</td>
                                 </tr>
                             }
                         </tbody>

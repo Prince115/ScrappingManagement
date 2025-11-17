@@ -24,7 +24,7 @@
             max-width: 100%;
         }
 
-       .half-page {
+        .half-page {
             padding: 10px;
             box-sizing: border-box;
         }
@@ -71,10 +71,12 @@
                 box-sizing: border-box;
                 page-break-inside: avoid; /* Prevent mid-section splits */
             }
-.half-page-fixed {
-        height: 14.85cm;
-        overflow: hidden;
-    }
+
+            .half-page-fixed {
+                height: 14.85cm;
+                overflow: hidden;
+            }
+
             .table th, .table td {
                 padding: 0.3rem !important;
                 font-size: 10pt;
@@ -91,26 +93,26 @@
     </style>
 </head>
 <body>
-@if (Model.Products != null && Model.Products.Any())
-        {
-var forceHalfPage =  Model.Products.Count <= 9;
-    <div class="container half-page @(forceHalfPage ? "half-page-fixed" : "")">
-        <!-- Quote Info: Two per line -->
-        <table style="width: 100%; font-size: 10pt; margin-bottom: 1rem;">
-            <tr>
-                <td><strong>Bill Number:</strong> @Model.BillNumber</td>
-                <td><strong>Supplier:</strong> @Model.SupplierName</td>
-            </tr>
-            <tr>
-                <td><strong>Date:</strong> @Model.Date.ToString("dd-MMMM-yyyy")</td>
-                <td><strong>Location:</strong> @Model.Location</td>
-            </tr>
-            <tr>
-                <td><strong>Status:</strong> @Model.Status</td>
-            </tr>
-        </table>
+    @if (Model.Products != null && Model.Products.Any())
+    {
+        var forceHalfPage = Model.Products.Count <= 9;
+        <div class="container half-page @(forceHalfPage ? "half-page-fixed" : "")">
+            <!-- Quote Info: Two per line -->
+            <table style="width: 100%; font-size: 10pt; margin-bottom: 1rem;">
+                <tr>
+                    <td><strong>Bill Number:</strong> @Model.BillNumber</td>
+                    <td><strong>Supplier:</strong> @Model.SupplierName</td>
+                </tr>
+                <tr>
+                    <td><strong>Date:</strong> @Model.Date.ToString("dd-MMMM-yyyy")</td>
+                    <td><strong>Location:</strong> @Model.Location</td>
+                </tr>
+                <tr>
+                    <td><strong>Status:</strong> @Model.Status</td>
+                </tr>
+            </table>
 
-        
+
             <table class="table table-bordered table-sm print-table">
                 <thead>
                     <tr>
@@ -151,28 +153,28 @@ var forceHalfPage =  Model.Products.Count <= 9;
                     </tr>
                 </tfoot>
             </table>
-        
-        <table style="width: 100%; font-size: 10pt; margin-top: 1rem;">
-            <tr valign="top">
-                <td style="width: 60%; padding-right: 10px;">
-                    <p><strong>Note:</strong></p>
-                    <textarea class="form-control" style="width: 100%; height: 60px;"></textarea>
-                </td>
 
-                <!-- Kato & Final Total - 40% -->
-                <td style="width: 40%; text-align: right;">
-                    <p><strong>Kato (-):</strong> <span style="float: right; min-width: 80px; text-align: right;">@Model.Kato.ToString("0.00")</span></p>
-                    <p><strong>Final Total:</strong> <span style="float: right; min-width: 80px; text-align: right;">@Model.FinalTotal.ToString("0.00")</span></p>
-                </td>
-            </tr>
-        </table>
+            <table style="width: 100%; font-size: 10pt; margin-top: 1rem;">
+                <tr valign="top">
+                    <td style="width: 60%; padding-right: 10px;">
+                        <p><strong>Note:</strong></p>
+                        <textarea class="form-control" style="width: 100%; height: 60px;">@Model.Note</textarea>
+                    </td>
 
-    </div>
-}
-        else
-        {
-            <p>No products found.</p>
-        }
+                    <!-- Kato & Final Total - 40% -->
+                    <td style="width: 40%; text-align: right;">
+                        <p><strong>Kato (-):</strong> <span style="float: right; min-width: 80px; text-align: right;">@Model.Kato.ToString("0.00")</span></p>
+                        <p><strong>Final Total:</strong> <span style="float: right; min-width: 80px; text-align: right;">@Model.FinalTotal.ToString("0.00")</span></p>
+                    </td>
+                </tr>
+            </table>
+
+        </div>
+    }
+    else
+    {
+        <p>No products found.</p>
+    }
     <script>
         window.onload = function () {
             window.print();

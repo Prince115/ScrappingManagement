@@ -1,13 +1,13 @@
-@model ScrappingManagement.Web.Dto.CustomerLedgerDtos
+﻿@model ScrappingManagement.Web.Dto.CustomerInvoiceWithItems
 
 @{
-    ViewData["Title"] = "Customer Ledger";
+    ViewData["Title"] = "Customer Invoice With Items";
     var Customers = ViewBag.Customers as List<ScrappingManagement.Web.Models.Customer>;
 }
 
-<h2>Customer Ledger</h2>
+<h2>Customer Invoice With Items</h2>
 
-<form asp-action="Index" method="get" class="mb-4">
+<form asp-action="CustomerItems" method="get" class="mb-4">
     <div class="row">
         <div class="col-md-4 mb-3">
             <label for="selectedCustomerId" class="form-label">Customer:</label>
@@ -58,6 +58,7 @@
                         <tr>
                             <th>Date</th>
                             <th>Bill No.</th>
+                            <th>With Gst?</th>
                             <th>Amount</th>
                         </tr>
                     </thead>
@@ -69,6 +70,7 @@
                                 <td>
                                     Opening Due
                                 </td>
+                                <td>-</td>
                                 <td class="text-end">@Model.OpeningBalance.ToString("N2")</td>
                             </tr>
                         }
@@ -81,8 +83,27 @@
                                         @entry.Description (@entry.BillNo)
                                     </a>
                                 </td>
+                                <td class="text-center">@(entry.IsWithGst ? "Yes" : "No")</td>
                                 <td class="text-end">@entry.Debit.ToString("N2")</td>
                             </tr>
+                            <tr>
+                                <td colspan="4" class="p-0">
+                                    <table class="table table-borderless mb-0 items-table">
+                                        <tbody>
+                                            @foreach (var item in entry.Items)
+                                            {
+                                                <tr>
+                                                    <td style="width:50%">
+                                                        <strong>@item.Name</strong>
+                                                        <small>@item.Weight (@item.Rate.ToString("N2")) = @item.Amount.ToString("N2")</small>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+
                         }
                         @if (!Model.LedgerEntries.Any(e => e.Type == "Invoice"))
                         {
@@ -91,7 +112,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="2" class="text-end fw-bold">Total Debits</td>
+                            <td colspan="3" class="text-end fw-bold">Total Debits</td>
                             <td class="text-end fw-bold">@Model.TotalDebit.ToString("N2")</td>
                         </tr>
                     </tfoot>

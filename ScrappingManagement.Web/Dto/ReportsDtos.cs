@@ -1,10 +1,10 @@
 namespace ScrappingManagement.Web.Dto
 {
 
-	public class CustomerLedgerDtos
+	public class CustomerInvoiceWithItems
 	{
 		public int? CustomerId { get; set; }
-		public string CustomerName { get; set; }
+		public string CustomerName { get; set; } = "";
 		public DateTime? FromDate { get; set; }
 		public DateTime? ToDate { get; set; }
 		public List<LedgerEntryDto> LedgerEntries { get; set; } = new List<LedgerEntryDto>();

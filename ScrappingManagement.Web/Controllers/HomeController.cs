@@ -20,6 +20,7 @@ public class HomeController : Controller
 		var invoices = _context.Invoices.AsQueryable();
 		var payments = _context.Receipts.AsQueryable();
 		var quotes = _context.Quotes.AsQueryable();
+		var customers = _context.Customers.AsQueryable();
 
 		if (startDate.HasValue)
 		{
@@ -37,13 +38,13 @@ public class HomeController : Controller
 
 		var vm = new DashboardViewModel
 		{
-			TotalCustomers = await _context.Customers.CountAsync(),
+			TotalCustomers = await customers.CountAsync(),
 			TotalInvoices = await invoices.CountAsync(),
 			TotalQuotes = await quotes.CountAsync(),
 			TotalSuppliers = await _context.Suppliers.CountAsync(),
 			TotalInvoiceAmount = await invoices.SumAsync(i => i.FinalAmount),
 			TotalReceivedAmount = await payments.SumAsync(p => p.Amount),
-			TotalDueAmount = await invoices.SumAsync(i => i.FinalAmount) - await payments.SumAsync(p => p.Amount),
+			TotalDueAmount = await customers.SumAsync(s => s.OpeningBalance ?? 0) + await invoices.SumAsync(i => i.FinalAmount) - await payments.SumAsync(p => p.Amount),
 			RecentInvoices = await invoices
 				.OrderByDescending(i => i.Date)
 				.Take(5)
