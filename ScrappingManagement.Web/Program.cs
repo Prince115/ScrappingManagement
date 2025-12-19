@@ -33,6 +33,7 @@ namespace ScrappingManagement.Web
 				options.Cookie.IsEssential = true;
 			});
 			var useInMemory = builder.Configuration.GetValue<bool>("UseInMemoryDatabase");
+			var dbType = builder.Configuration.GetValue<string>("Database");
 
 			if (useInMemory)
 			{
@@ -41,12 +42,19 @@ namespace ScrappingManagement.Web
 				builder.Services.AddDbContext<ApplicationDbContext>(options =>
 					options.UseInMemoryDatabase("IdentityDb"));
 			}
-			else
+			else if (dbType == "MSSQL")
 			{
 				builder.Services.AddDbContext<AppDbContext>(options =>
 				    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 				builder.Services.AddDbContext<ApplicationDbContext>(options =>
 				    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+			}
+			else if (dbType == "POSTGRESQL")
+			{
+				builder.Services.AddDbContext<AppDbContext>(options =>
+					options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+				builder.Services.AddDbContext<ApplicationDbContext>(options =>
+				    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 			}
 
 			builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
@@ -56,32 +64,32 @@ namespace ScrappingManagement.Web
 			var app = builder.Build();
 
 			// Seed roles
-			using (var scope = app.Services.CreateScope())
-			{
-				var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-				var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
+			//using (var scope = app.Services.CreateScope())
+			//{
+			//	var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+			//	var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
-				Task.Run(async () =>
-				{
-					string[] roleNames = { "Admin", "User" };
-					foreach (var roleName in roleNames)
-					{
-						if (!await roleManager.RoleExistsAsync(roleName))
-						{
-							await roleManager.CreateAsync(new IdentityRole(roleName));
-						}
-					}
+			//	Task.Run(async () =>
+			//	{
+			//		string[] roleNames = { "Admin", "User" };
+			//		foreach (var roleName in roleNames)
+			//		{
+			//			if (!await roleManager.RoleExistsAsync(roleName))
+			//			{
+			//				await roleManager.CreateAsync(new IdentityRole(roleName));
+			//			}
+			//		}
 
-					// Create a default admin user if one doesn't exist and assign role
-					var adminUser = await userManager.FindByEmailAsync("admin@ambitinfoway.com");
-					if (adminUser == null)
-					{
-						adminUser = new IdentityUser { UserName = "admin@ambitinfoway.com", Email = "admin@ambitinfoway.com", EmailConfirmed = true };
-						await userManager.CreateAsync(adminUser, "Ambit@1234");
-						await userManager.AddToRoleAsync(adminUser, "Admin");
-					}
-				}).Wait();
-			}
+			//		// Create a default admin user if one doesn't exist and assign role
+			//		var adminUser = await userManager.FindByEmailAsync("admin@ambitinfoway.com");
+			//		if (adminUser == null)
+			//		{
+			//			adminUser = new IdentityUser { UserName = "admin@ambitinfoway.com", Email = "admin@ambitinfoway.com", EmailConfirmed = true };
+			//			await userManager.CreateAsync(adminUser, "Ambit@1234");
+			//			await userManager.AddToRoleAsync(adminUser, "Admin");
+			//		}
+			//	}).Wait();
+			//}
 
 			if (true || app.Environment.IsDevelopment())
 			{

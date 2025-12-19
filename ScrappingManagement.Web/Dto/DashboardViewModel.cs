@@ -10,8 +10,8 @@ public class DashboardViewModel
 	public decimal TotalReceivedAmount { get; set; }
 	public decimal TotalDueAmount { get; set; }
 
-	public DateTime? StartDate { get; set; }
-	public DateTime? EndDate { get; set; }
+	public DateOnly? StartDate { get; set; }
+	public DateOnly? EndDate { get; set; }
 
 	public List<RecentInvoiceDto> RecentInvoices { get; set; } = new List<RecentInvoiceDto>();
 	public List<TopProductDto> TopProducts { get; set; } = new List<TopProductDto>();
@@ -22,7 +22,7 @@ public class RecentInvoiceDto
 	public int Id { get; set; }
 	public string InvoiceNumber { get; set; }
 	public string CustomerName { get; set; }
-	public DateTime Date { get; set; }
+	public DateOnly Date { get; set; }
 	public decimal FinalAmount { get; set; }
 }
 

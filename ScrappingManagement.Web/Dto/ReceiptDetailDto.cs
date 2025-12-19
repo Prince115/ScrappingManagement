@@ -11,6 +11,6 @@ namespace ScrappingManagement.Web.Dto
         public decimal Amount { get; set; }
         public bool WithGst { get; set; }
         public string Description { get; set; }
-        public DateTime Date { get; set; }
+        public DateOnly Date { get; set; }
     }
 }

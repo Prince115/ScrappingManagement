@@ -23,8 +23,8 @@ namespace ScrappingManagement.Web.Controllers
             int? pageSize,
             int? supplierId,
             PaymentMode? paymentMode,
-            DateTime? fromDate,
-            DateTime? toDate)
+            DateOnly? fromDate,
+            DateOnly? toDate)
         {
 			int currentPageSize = pageSize ?? 20;
 
@@ -43,12 +43,12 @@ namespace ScrappingManagement.Web.Controllers
 
 			if (fromDate.HasValue)
 			{
-				payments = payments.Where(p => p.Date >= fromDate.Value.Date);
+				payments = payments.Where(p => p.Date >= fromDate.Value);
 			}
 
 			if (toDate.HasValue)
 			{
-				payments = payments.Where(p => p.Date <= toDate.Value.Date);
+				payments = payments.Where(p => p.Date <= toDate.Value);
 			}
 
 			// Join with Suppliers to get SupplierName and project into PaymentDetailDto
@@ -150,7 +150,7 @@ namespace ScrappingManagement.Web.Controllers
 					payment.Amount = editPaymentDto.Amount;
 					payment.Description = editPaymentDto.Description;
 					payment.Date = editPaymentDto.Date;
-
+					//DateOnly.FromDateTime(DateTime.UtcNow.ToIndianTime());
 					_context.Update(payment);
 					await _context.SaveChangesAsync();
 				}

@@ -7,7 +7,7 @@ public class InvoiceViewModel
 {
 	public int Id { get; set; }
 	public string InvoiceNumber { get; set; } = "";
-	public DateTime Date { get; set; }
+	public DateOnly Date { get; set; }
 	public int CustomerId { get; set; }
 	public string Location { get; set; } = "";
 	public string BillNo { get; set; } = "";
@@ -41,6 +41,5 @@ public class InvoiceItemViewModel
 
 public class InvoiceItems : InvoiceItemViewModel
 {
-
 	public string Name { get; set; }
 }

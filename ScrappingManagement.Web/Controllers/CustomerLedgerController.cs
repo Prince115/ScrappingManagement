@@ -13,8 +13,8 @@ namespace ScrappingManagement.Web.Controllers
 
 		public async Task<IActionResult> Index(
 			 int? selectedCustomerId,
-			 DateTime? fromDate,
-			 DateTime? toDate)
+			 DateOnly? fromDate,
+			 DateOnly? toDate)
 		{
 			ViewBag.Customers = await _context.Customers.OrderBy(s => s.Name).ToListAsync();
 

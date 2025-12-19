@@ -5,8 +5,8 @@ namespace ScrappingManagement.Web.Dto
 	{
 		public int? CustomerId { get; set; }
 		public string CustomerName { get; set; } = "";
-		public DateTime? FromDate { get; set; }
-		public DateTime? ToDate { get; set; }
+		public DateOnly? FromDate { get; set; }
+		public DateOnly? ToDate { get; set; }
 		public List<LedgerEntryDto> LedgerEntries { get; set; } = new List<LedgerEntryDto>();
 		public decimal TotalDebit { get; set; }
 		public decimal TotalCredit { get; set; }

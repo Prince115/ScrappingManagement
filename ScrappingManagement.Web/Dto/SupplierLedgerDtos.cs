@@ -2,7 +2,7 @@ namespace ScrappingManagement.Web.Dto
 {
 	public class LedgerEntryDto
 	{
-		public DateTime Date { get; set; }
+		public DateOnly Date { get; set; }
 		public string Type { get; set; }
 		public string Description { get; set; }
 		public decimal Debit { get; set; }
@@ -17,8 +17,8 @@ namespace ScrappingManagement.Web.Dto
 	{
 		public int? SelectedSupplierId { get; set; }
 		public string SelectedSupplierName { get; set; }
-		public DateTime? FromDate { get; set; }
-		public DateTime? ToDate { get; set; }
+		public DateOnly? FromDate { get; set; }
+		public DateOnly? ToDate { get; set; }
 		public List<LedgerEntryDto> LedgerEntries { get; set; } = new List<LedgerEntryDto>();
 		public decimal TotalDebit { get; set; }
 		public decimal TotalCredit { get; set; }

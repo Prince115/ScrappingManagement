@@ -3,12 +3,12 @@ using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Dto
 {
-    public class EditPaymentDto
-    {
+    public class EditReceiptDto
+	{
         [Required]
         public int Id { get; set; }
 
-        public int SupplierId { get; set; }
+        public int CustomerId { get; set; }
 
         [Required]
         public PaymentMode PaymentMode { get; set; }

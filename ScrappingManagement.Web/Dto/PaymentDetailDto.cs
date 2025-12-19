@@ -10,6 +10,6 @@ namespace ScrappingManagement.Web.Dto
         public PaymentMode PaymentMode { get; set; }
         public decimal Amount { get; set; }
         public string Description { get; set; }
-        public DateTime Date { get; set; }
+        public DateOnly Date { get; set; }
     }
 }

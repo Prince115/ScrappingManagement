@@ -3,19 +3,23 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ScrappingManagement.Web.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
-    {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
+	public class ApplicationDbContext : IdentityDbContext
+	{
+		private readonly IConfiguration _config;
 
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
-            base.OnModelCreating(builder);
-            // Customize the ASP.NET Identity model and override the defaults if needed.
-            // For example, you can rename the ASP.NET Identity table names.
-            // Leave this empty if you want to use the default configuration.
-        }
-    }
+		public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, IConfiguration config)
+		    : base(options)
+		{
+			_config = config;
+		}
+
+
+		protected override void OnModelCreating(ModelBuilder builder)
+		{
+			base.OnModelCreating(builder);
+
+			if (_config.GetValue<string>("Database") == "POSTGRESQL")
+				builder.HasDefaultSchema("scpe");
+		}
+	}
 }

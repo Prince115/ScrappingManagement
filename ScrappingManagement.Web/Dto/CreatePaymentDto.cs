@@ -16,6 +16,6 @@ namespace ScrappingManagement.Web.Dto
         public string? Description { get; set; }
 
         [Required]
-        public DateTime Date { get; set; } = DateTime.Now;
+        public DateOnly Date { get; set; } 
     }
 }

@@ -15,7 +15,7 @@ public class HomeController : Controller
 		_context = context;
 	}
 
-	public async Task<IActionResult> Dashboard(DateTime? startDate, DateTime? endDate)
+	public async Task<IActionResult> Dashboard(DateOnly? startDate, DateOnly? endDate)
 	{
 		var invoices = _context.Invoices.AsQueryable();
 		var payments = _context.Receipts.AsQueryable();

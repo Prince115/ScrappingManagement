@@ -20,7 +20,7 @@ namespace ScrappingManagement.Web.Controllers
 			_context = context;
 		}
 
-		public async Task<IActionResult> Index(int? pageNumber, int? pageSize, int? supplierId, DateTime? fromDate, DateTime? toDate, QuoteStatus? status)
+		public async Task<IActionResult> Index(int? pageNumber, int? pageSize, int? supplierId, DateOnly? fromDate, DateOnly? toDate, QuoteStatus? status)
 		{
 
 			int currentPageSize = pageSize ?? 20;
@@ -36,12 +36,12 @@ namespace ScrappingManagement.Web.Controllers
 
 			if (fromDate.HasValue)
 			{
-				quotes = quotes.Where(q => q.Date >= fromDate.Value.Date);
+				quotes = quotes.Where(q => q.Date >= fromDate.Value);
 			}
 
 			if (toDate.HasValue)
 			{
-				quotes = quotes.Where(q => q.Date <= toDate.Value.Date);
+				quotes = quotes.Where(q => q.Date <= toDate.Value);
 			}
 
 			if (status.HasValue)
@@ -100,7 +100,7 @@ namespace ScrappingManagement.Web.Controllers
 					_context.Payments.Add(new Payment
 					{
 						Amount = quote.FinalTotal,
-						Date = DateTime.UtcNow.ToIndianTime(),
+						Date = DateOnly.FromDateTime(DateTime.UtcNow.ToIndianTime()),
 						SupplierId = quote.SupplierId,
 						PaymentMode = PaymentMode.Cash,
 						Description = "Auto Created"
@@ -138,7 +138,7 @@ namespace ScrappingManagement.Web.Controllers
 						_context.Payments.Add(new Payment
 						{
 							Amount = quote.FinalTotal,
-							Date = DateTime.UtcNow.ToIndianTime(),
+							Date = DateOnly.FromDateTime(DateTime.UtcNow.ToIndianTime()),
 							SupplierId = quote.SupplierId,
 							PaymentMode = PaymentMode.Cash,
 							Description = "Auto Created"
@@ -212,7 +212,7 @@ namespace ScrappingManagement.Web.Controllers
 			}
 
 			var quote = await _context.Quotes
-			    .Include(q => q.QuoteProducts)
+			    .Include(q => q.QuoteProducts.OrderBy(o => o.Id))
 			    .FirstOrDefaultAsync(m => m.Id == id);
 
 			if (quote == null)
@@ -265,6 +265,10 @@ namespace ScrappingManagement.Web.Controllers
 						}
 						else
 						{
+							if (product.Id == 0 && product.Deleted == 1)
+							{
+								continue;
+							}
 							var existingProduct = existingQuote.QuoteProducts.FirstOrDefault(p => p.Id == product.Id);
 							if (existingProduct != null)
 							{

@@ -5,9 +5,10 @@ namespace ScrappingManagement.Web.Models;
 public class Quote
 {
 	public int Id { get; set; }
+	[Column("billnumber")]
 	public string BillNumber { get; set; } = string.Empty;
 
-	public DateTime Date { get; set; } = DateTime.UtcNow;
+	public DateOnly Date { get; set; }
 	public string Location { get; set; } = string.Empty;
 
 	public int SupplierId { get; set; }
@@ -18,6 +19,7 @@ public class Quote
 
 	public decimal Total { get; set; }
 	public decimal FinalTotal { get; set; }
+	[Column("kato")]
 	public decimal Kato { get; set; }
 	public string? Note { get; set; }
 	public QuoteStatus Status { get; set; } = QuoteStatus.ReportPending;

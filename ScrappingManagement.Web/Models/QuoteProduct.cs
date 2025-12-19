@@ -12,12 +12,13 @@ namespace ScrappingManagement.Web.Models
 
 		public string? Description { get; set; } = "";
 		public double Gross { get; set; }
+		[Column("nos")]
 		public int? Nos { get; set; }
 
 		public int BoraCount { get; set; } = 0;
 		public double BoraReport { get; set; } = 0;
 		public double ProductReport { get; set; } = 0;
-
+		[Column("netweight")]
 		public double NetWeight { get; set; }
 		public double Rate { get; set; }
 		[NotMapped]

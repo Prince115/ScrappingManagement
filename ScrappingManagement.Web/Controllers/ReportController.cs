@@ -21,8 +21,8 @@ namespace ScrappingManagement.Web.Controllers
 		[Route("CustomerItems")]
 		public async Task<IActionResult> CustomerItems(
 		  int? selectedCustomerId,
-		  DateTime? fromDate,
-		  DateTime? toDate)
+		  DateOnly? fromDate,
+		  DateOnly? toDate)
 		{
 			ViewBag.Customers = await _context.Customers.OrderBy(s => s.Name).ToListAsync();
 

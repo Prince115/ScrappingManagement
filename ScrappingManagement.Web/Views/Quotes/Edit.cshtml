@@ -304,7 +304,7 @@
             $(document).on('click', '.removeRow', function () {
                 var $row = $(this).closest('tr');
                 $row.find('input[name$=".Deleted"]').val('1');
-                $row.find('input, select').not('[name$=".Deleted"]').prop('disabled', true);
+                //$row.find('input, select').not('[name$=".Deleted"]').prop('disabled', true);
                 $row.addClass('deleted').hide();
                 refreshRowNames();
                 recalcGridTotal();

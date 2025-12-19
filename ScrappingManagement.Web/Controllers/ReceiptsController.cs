@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ScrappingManagement.Web.Data;
 using ScrappingManagement.Web.Dto;
+using ScrappingManagement.Web.Helpers;
 using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Controllers
@@ -13,13 +14,13 @@ namespace ScrappingManagement.Web.Controllers
 	{
 		private readonly AppDbContext _context = context;
 
-        public async Task<IActionResult> Index(
-		  int? pageNumber,
-		  int? pageSize,
-		  int? CustomerId,
-		  PaymentMode? paymentMode,
-		  DateTime? fromDate,
-		  DateTime? toDate)
+		public async Task<IActionResult> Index(
+		    int? pageNumber,
+		    int? pageSize,
+		    int? CustomerId,
+		    PaymentMode? paymentMode,
+		    DateOnly? fromDate,
+		    DateOnly? toDate)
 		{
 			int currentPageSize = pageSize ?? 20;
 
@@ -38,12 +39,12 @@ namespace ScrappingManagement.Web.Controllers
 
 			if (fromDate.HasValue)
 			{
-				receipts = receipts.Where(p => p.Date >= fromDate.Value.Date);
+				receipts = receipts.Where(p => p.Date >= fromDate.Value);
 			}
 
 			if (toDate.HasValue)
 			{
-				receipts = receipts.Where(p => p.Date <= toDate.Value.Date);
+				receipts = receipts.Where(p => p.Date <= toDate.Value);
 			}
 
 			var receiptDetailsQuery = receipts
@@ -92,7 +93,7 @@ namespace ScrappingManagement.Web.Controllers
 			    .Select(i => new { i.Id, Display = i.InvoiceNumber + " - " + (i.Customer != null ? i.Customer.Name : "") })
 			    .ToListAsync();
 			ViewBag.Customers = await _context.Customers.ToListAsync();
-			var model = new Receipt { Date = DateTime.Today };
+			var model = new Receipt { Date = DateOnly.FromDateTime(DateTime.UtcNow.ToIndianTime()) };
 			return View(model);
 		}
 
@@ -139,6 +140,109 @@ namespace ScrappingManagement.Web.Controllers
 			}
 
 			return View(payment);
+		}
+
+
+		public async Task<IActionResult> Edit(int? id)
+		{
+			if (id == null) return NotFound();
+
+			var payment = await _context.Receipts.FindAsync(id);
+			if (payment == null) return NotFound();
+
+			ViewBag.Customers = await _context.Customers.ToListAsync();
+			ViewBag.PaymentModes = Enum.GetValues(typeof(PaymentMode)).Cast<PaymentMode>().ToList();
+			return View(payment);
+		}
+
+		[HttpPost]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Edit(int id, EditReceiptDto request)
+		{
+			if (id != request.Id)
+			{
+				return NotFound();
+			}
+
+			if (ModelState.IsValid)
+			{
+				try
+				{
+					var payment = await _context.Receipts.FindAsync(id);
+					if (payment == null)
+					{
+						return NotFound();
+					}
+					payment.CustomerId = request.CustomerId;
+					payment.PaymentMode = request.PaymentMode;
+					payment.Amount = request.Amount;
+					payment.Description = request.Description;
+					payment.Date = request.Date;
+					_context.Update(payment);
+					await _context.SaveChangesAsync();
+				}
+				catch (DbUpdateConcurrencyException)
+				{
+					if (!ReceiptExists(request.Id))
+					{
+						return NotFound();
+					}
+					else
+					{
+						throw;
+					}
+				}
+				return RedirectToAction(nameof(Index));
+			}
+			ViewBag.Customers = await _context.Customers.ToListAsync();
+			ViewBag.PaymentModes = System.Enum.GetValues(typeof(PaymentMode)).Cast<PaymentMode>().ToList();
+			return View(request);
+		}
+
+		[Authorize(Roles = "Admin")]
+		public async Task<IActionResult> Delete(int? id)
+		{
+			if (id == null)
+			{
+				return NotFound();
+			}
+
+			var payment = await _context.Receipts
+			    .Join(_context.Customers,
+					p => p.CustomerId,
+					s => s.Id,
+					(p, s) => new ReceiptDetailDto
+					{
+						Id = p.Id,
+						CustomerId = p.CustomerId,
+						CustomerName = s.Name,
+						PaymentMode = p.PaymentMode,
+						Amount = p.Amount,
+						Description = p.Description,
+						Date = p.Date
+					})
+			    .FirstOrDefaultAsync(m => m.Id == id);
+			if (payment == null)
+			{
+				return NotFound();
+			}
+
+			return View(payment);
+		}
+
+		[HttpPost, ActionName("Delete")]
+		[Authorize(Roles = "Admin")]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> DeleteConfirmed(int id)
+		{
+			var payment = await _context.Receipts.FindAsync(id);
+			_context.Receipts.Remove(payment);
+			await _context.SaveChangesAsync();
+			return RedirectToAction(nameof(Index));
+		}
+		private bool ReceiptExists(int id)
+		{
+			return _context.Receipts.Any(e => e.Id == id);
 		}
 	}
 }

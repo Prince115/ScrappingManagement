@@ -6,7 +6,7 @@ public class Invoice
 	public required string InvoiceNumber { get; set; }
 	public string? BillNo { get; set; }
 	public string? BookNo { get; set; }
-	public DateTime Date { get; set; }
+	public DateOnly Date { get; set; }
 	public string Location { get; set; } = "";
 	public string? Note { get; set; }
 	public decimal PackagingCharge { get; set; }

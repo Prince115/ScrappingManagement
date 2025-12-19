@@ -5,7 +5,13 @@ namespace ScrappingManagement.Web.Data
 {
 	public class AppDbContext : DbContext
 	{
-		public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+		private readonly IConfiguration _config;
+
+		public AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration config)
+		    : base(options)
+		{
+			_config = config;
+		}
 
 		public DbSet<QuoteProduct> QuoteProducts { get; set; }
 		public DbSet<Supplier> Suppliers { get; set; }
@@ -20,6 +26,17 @@ namespace ScrappingManagement.Web.Data
 		protected override void OnModelCreating(ModelBuilder modelBuilder)
 		{
 			base.OnModelCreating(modelBuilder);
+			modelBuilder.Entity<Quote>()
+		  .Property(e => e.Id)
+		  .ValueGeneratedOnAdd();
+
+			modelBuilder.Entity<QuoteProduct>()
+			    .Property(e => e.Id)
+			    .ValueGeneratedOnAdd();
+
+
+			if (_config.GetValue<string>("Database") == "POSTGRESQL")
+				modelBuilder.HasDefaultSchema("scpe");
 		}
 	}
 }

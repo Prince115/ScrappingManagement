@@ -5,7 +5,7 @@ namespace ScrappingManagement.Web.Dto;
 public class QuoteDetailDto
 {
 	public int Id { get; set; }
-	public DateTime Date { get; set; }
+	public DateOnly Date { get; set; }
 	public string Location { get; set; }
 	public string? Note { get; set; }
 	public string BillNumber { get; set; }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ScrappingManagement.Web.Data;
 using ScrappingManagement.Web.Dto;
+using ScrappingManagement.Web.Helpers;
 using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Controllers;
@@ -18,7 +19,7 @@ public class InvoicesController : Controller
 		_config = config;
 	}
 
-	public async Task<IActionResult> Index(int? pageNumber, int? pageSize, int? customerId, DateTime? fromDate, DateTime? toDate)
+	public async Task<IActionResult> Index(int? pageNumber, int? pageSize, int? customerId, DateOnly? fromDate, DateOnly? toDate)
 	{
 
 		int currentPageSize = pageSize ?? 20;
@@ -34,12 +35,12 @@ public class InvoicesController : Controller
 
 		if (fromDate.HasValue)
 		{
-			quotes = quotes.Where(q => q.Date >= fromDate.Value.Date);
+			quotes = quotes.Where(q => q.Date >= fromDate.Value);
 		}
 
 		if (toDate.HasValue)
 		{
-			quotes = quotes.Where(q => q.Date <= toDate.Value.Date);
+			quotes = quotes.Where(q => q.Date <= toDate.Value);
 		}
 
 		quotes = quotes.OrderByDescending(q => q.Id);
@@ -58,7 +59,7 @@ public class InvoicesController : Controller
 	{
 		var viewModel = new InvoiceViewModel
 		{
-			Date = DateTime.Today,
+			Date = DateOnly.FromDateTime(DateTime.UtcNow.ToIndianTime()),
 			Customers = [.. _context.Customers.Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Name })],
 			Products = [.. _context.Products.Select(p => new SelectListItem { Value = p.Id.ToString(), Text = p.Name })],
 			Items = [new InvoiceItemViewModel()]
