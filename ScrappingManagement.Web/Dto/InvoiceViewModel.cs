@@ -10,8 +10,8 @@ public class InvoiceViewModel
 	public DateOnly Date { get; set; }
 	public int CustomerId { get; set; }
 	public string Location { get; set; } = "";
-	public string BillNo { get; set; } = "";
-	public string BookNo { get; set; } = "";
+	public string? BillNo { get; set; } = "";
+	public string? BookNo { get; set; } = "";
 	public string? Note { get; set; }
 	public decimal PackagingCharge { get; set; }
 	public bool WithGst { get; set; } = false;
