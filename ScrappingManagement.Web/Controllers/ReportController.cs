@@ -71,7 +71,8 @@ namespace ScrappingManagement.Web.Controllers
 					    Description = p.PaymentMode.ToString(),
 					    Debit = 0,
 					    Credit = p.Amount,
-					    DocumentId = p.Id
+					    DocumentId = p.Id,
+					    IsWithGst = p.WithGst
 				    });
 
 				if (fromDate.HasValue)

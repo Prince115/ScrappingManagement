@@ -13,4 +13,4 @@ ScrapeUI/package-lock.json
 /ScrappingManagement.Web/bin
 /ScrappingManagement.Web/obj
 /ScrappingManagement.Web/Properties
-/ScrappingManagement.Web/appsettings.json
+/ScrappingManagement.Web/appsettings.Development.json

@@ -183,6 +183,8 @@ public class InvoicesController : Controller
 			WithGst = invoice.WithGst,
 			Note = invoice.Note,
 			BillNo = invoice.BillNo,
+			TcsPercentage = invoice.TcsPercentage,
+			TcsValue = invoice.TcsValue,
 			BookNo = invoice.BookNo,
 			FinalAmount = invoice.FinalAmount,
 			PackagingCharge = invoice.PackagingCharge,

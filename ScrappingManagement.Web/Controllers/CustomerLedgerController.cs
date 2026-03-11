@@ -14,7 +14,8 @@ namespace ScrappingManagement.Web.Controllers
 		public async Task<IActionResult> Index(
 			 int? selectedCustomerId,
 			 DateOnly? fromDate,
-			 DateOnly? toDate)
+			 DateOnly? toDate,
+			 int? gst)
 		{
 			ViewBag.Customers = await _context.Customers.OrderBy(s => s.Name).ToListAsync();
 
@@ -22,7 +23,8 @@ namespace ScrappingManagement.Web.Controllers
 			{
 				CustomerId = selectedCustomerId,
 				FromDate = fromDate,
-				ToDate = toDate
+				ToDate = toDate,
+				GST = gst
 			};
 
 			if (selectedCustomerId.HasValue)
@@ -54,6 +56,7 @@ namespace ScrappingManagement.Web.Controllers
 					    Type = "Receipt",
 					    Description = p.PaymentMode.ToString(),
 					    Debit = 0,
+					    IsWithGst = p.WithGst,
 					    Credit = p.Amount,
 					    DocumentId = p.Id
 				    });
@@ -63,6 +66,15 @@ namespace ScrappingManagement.Web.Controllers
 					Invoices = Invoices.Where(q => q.Date >= fromDate.Value);
 					Receipts = Receipts.Where(p => p.Date >= fromDate.Value);
 				}
+				if (gst != null)
+				{
+					Invoices = Invoices.Where(q => q.IsWithGst == (gst == 0 ? false : true));
+					Receipts = Receipts.Where(p => p.IsWithGst == (gst == 0 ? false : true));
+					if (gst == 1)
+					{
+						model.OpeningBalance = 0;
+                    }
+                }
 				if (toDate.HasValue)
 				{
 					Invoices = Invoices.Where(q => q.Date <= toDate.Value);

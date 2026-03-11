@@ -9,7 +9,7 @@
 
 <form asp-action="Index" method="get" class="mb-4">
     <div class="row">
-        <div class="col-md-4 mb-3">
+        <div class="col-md-3 mb-3">
             <label for="selectedCustomerId" class="form-label">Customer:</label>
             <select name="selectedCustomerId" id="selectedCustomerId" class="form-select">
                 <option value="">-- Select Customer --</option>
@@ -20,6 +20,14 @@
                         <option value="@Customer.Id" selected="@(Model.CustomerId == Customer.Id)">@Customer.Name</option>
                     }
                 }
+            </select>
+        </div>
+        <div class="col-md-3 mb-3">
+            <label for="gst" class="form-label">Type:</label>
+            <select name="gst" id="gst" class="form-select">
+                <option value="" selected="@(Model.GST == null)">All</option>
+                <option value="0" selected="@(Model.GST == 0)">Without GST</option>
+                <option value="1" selected="@(Model.GST == 1)">With GST</option>
             </select>
         </div>
         <div class="col-md-3 mb-3">
@@ -58,6 +66,7 @@
                         <tr>
                             <th>Date</th>
                             <th>Bill No.</th>
+                            <th>GST</th>
                             <th>Amount</th>
                         </tr>
                     </thead>
@@ -69,6 +78,7 @@
                                 <td>
                                     Opening Due
                                 </td>
+                                <td></td>
                                 <td class="text-end">@Model.OpeningBalance.ToString("N2")</td>
                             </tr>
                         }
@@ -77,21 +87,22 @@
                             <tr>
                                 <td>@entry.Date.ToString("dd-MM-yyyy")</td>
                                 <td>
-                                    <a asp-controller="Invoices" asp-action="Details" asp-route-id="@entry.DocumentId">
+                                    <a asp-controller="Invoices" asp-action="Edit" asp-route-id="@entry.DocumentId">
                                         @entry.Description (@entry.BillNo)
                                     </a>
                                 </td>
+                                <td>@(entry.IsWithGst ? "Yes" : "No")</td>
                                 <td class="text-end">@entry.Debit.ToString("N2")</td>
                             </tr>
                         }
                         @if (!Model.LedgerEntries.Any(e => e.Type == "Invoice"))
                         {
-                            <tr><td colspan="3">No Invoices found for this Customer and date range.</td></tr>
+                            <tr><td colspan="4">No Invoices found for this Customer and date range.</td></tr>
                         }
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="2" class="text-end fw-bold">Total Debits</td>
+                            <td colspan="3" class="text-end fw-bold">Total Debits</td>
                             <td class="text-end fw-bold">@Model.TotalDebit.ToString("N2")</td>
                         </tr>
                     </tfoot>
@@ -104,6 +115,7 @@
                         <tr>
                             <th>Date</th>
                             <th>Description</th>
+                            <th>GST</th>
                             <th>Amount</th>
                         </tr>
                     </thead>
@@ -117,17 +129,18 @@
                                         @entry.Description
                                     </a>
                                 </td>
+                                <td>@(entry.IsWithGst ? "Yes" : "No")</td>
                                 <td class="text-end">@entry.Credit.ToString("N2")</td>
                             </tr>
                         }
                         @if (!Model.LedgerEntries.Any(e => e.Type == "Receipt"))
                         {
-                            <tr><td colspan="3">No Receipts found for this Customer and date range.</td></tr>
+                            <tr><td colspan="4">No Receipts found for this Customer and date range.</td></tr>
                         }
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="2" class="text-end fw-bold">Total Credits</td>
+                            <td colspan="3" class="text-end fw-bold">Total Credits</td>
                             <td class="text-end fw-bold">@Model.TotalCredit.ToString("N2")</td>
                         </tr>
                     </tfoot>

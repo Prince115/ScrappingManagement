@@ -12,7 +12,7 @@
     <div class="row mb-3">
         <div class="col-md-4">
             <label asp-for="SupplierId" class="form-label">Supplier</label>
-            <select asp-for="SupplierId" id="SupplierId" class="form-select" required>
+            <select asp-for="SupplierId" id="SupplierId" class="form-select supplier-select" required>
                 <option value="">-- Select Supplier --</option>
                 @foreach (var supplier in suppliers)
                 {
@@ -48,17 +48,17 @@
             <thead>
                 <tr>
                     <th>NO</th>
-                    <th>Product</th>
+                    <th style="min-width: 180px;">Product</th>
                     <th>Description</th>
                     <th>Loaded Weight</th>
                     <th>Unload Weight</th>
                     <th>Nos</th>
                     <th>Gross</th>
-                    <th>Bora Count</th>
-                    <th>Bora Report</th>
-                    <th>Product Report</th>
+                    <th style="max-width: 50px;">Bora Count</th>
+                    <th style="max-width: 50px;">Bora Report</th>
+                    <th style="max-width: 50px;">Product Report</th>
                     <th>Net Weight</th>
-                    <th>Rate</th>
+                    <th style="min-width: 80px;">Rate</th>
                     <th>Total Amount</th>
                     <th>Action</th>
                 </tr>
@@ -74,7 +74,7 @@
                             <td>
                                 <input type="hidden" name="quoteProducts[@i].Id" value="@quoteProductsList[i].Id" />
                                 <input type="hidden" name="quoteProducts[@i].Deleted" value="0" />
-                                <select name="quoteProducts[@i].ProductId" class="form-select productId" required>
+                                <select name="quoteProducts[@i].ProductId" class="form-select productId product-select" required>
                                     <option value="">-- Select --</option>
                                     @foreach (var product in products)
                                     {
@@ -133,12 +133,12 @@
             </div>
         </div>
     </div>
-      <div class="row mt-3">
-          <div class="col-sm-6">
-               <button type="submit" class="btn btn-primary">Save Quote</button>
+    <div class="row mt-3">
+        <div class="col-sm-6">
+            <button type="submit" class="btn btn-primary">Save Quote</button>
         </div>
-         <div class="col-sm-6 text-end">
-        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        <div class="col-sm-6 text-end">
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
         </div>
     </div>
 </form>
@@ -236,7 +236,8 @@
                 var $row = $('<tr>');
                 $row.append($('<td class="row-no">').text(rowIdx + 1));
 
-                var $productSelect = $('<select class="form-select productId" name="quoteProducts[' + rowIdx + '].ProductId" required>');
+                  // Create product select with product-select class for Select2
+                var $productSelect = $('<select class="form-select productId product-select" name="quoteProducts[' + rowIdx + '].ProductId" required>');
                 $productSelect.append('<option value="">-- Select --</option>');
                 products.forEach(function (p) {
                     $productSelect.append('<option value="' + p.Id + '">' + p.Name + '</option>');
@@ -261,6 +262,12 @@
                 $row.append($('<td>').append('<button type="button" class="btn btn-danger btn-sm removeRow">Delete</button>'));
 
                 $('#productsTable tbody').append($row);
+                $row.find('.product-select').select2({
+                     theme: 'bootstrap-5',
+                     width: 'resolve',
+                     placeholder: '-- Select --',
+                     allowClear: true
+                 });
                 refreshRowNames();
             }
 
@@ -369,6 +376,19 @@
                 if ($('#productsTable tbody tr').length === 0) {
                     addProductRow();
                 }
+
+                $('.product-select').select2({
+                     theme: 'bootstrap-5',
+                     width: 'resolve',
+                     placeholder: '-- Select --',
+                     allowClear: true
+                 });
+                $('.supplier-select').select2({
+                    theme: 'bootstrap-5',
+                    width: 'resolve',
+                    placeholder: '-- Select --',
+                    allowClear: true
+                });
             });
         });
     </script>
