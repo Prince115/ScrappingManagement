@@ -3,10 +3,14 @@
 
 // Write your JavaScript code.
 
-document.getElementById('themeToggle').addEventListener('click', function () {
-    const current = document.documentElement.getAttribute('data-bs-theme');
+document.addEventListener('DOMContentLoaded', function () {
+    const toggle = document.getElementById('themeToggle');
+    if (!toggle) return;
+    toggle.checked = (window.currentTheme === 'dark');
+    toggle.addEventListener('click', function () {
+        const next = this.checked ? 'dark' : 'light';
 
-    const next = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-bs-theme', next);
-    localStorage.setItem('theme', next);
+        document.documentElement.setAttribute('data-bs-theme', next);
+        localStorage.setItem('theme', next);
+    });
 });
