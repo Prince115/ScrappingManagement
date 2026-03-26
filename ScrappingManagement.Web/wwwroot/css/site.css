@@ -1,22 +1,123 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
+}
+
+/* ── Toggle switch ───────────────────────────────── */
+.theme-toggle {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    cursor: pointer;
+}
+
+    .theme-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+        position: absolute;
+    }
+
+.theme-slider {
+    position: absolute;
+    inset: 0;
+    background: #adb5bd;
+    border-radius: 24px;
+    transition: background 0.25s;
+}
+
+    .theme-slider::before {
+        content: '';
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        left: 3px;
+        top: 3px;
+        background: #fff;
+        border-radius: 50%;
+        transition: transform 0.25s;
+    }
+
+.theme-toggle input:checked + .theme-slider {
+    background: var(--bs-primary);
+}
+
+    .theme-toggle input:checked + .theme-slider::before {
+        transform: translateX(20px);
+    }
+
+/* ── For Select 2 ───────────────────────────────── */
+
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-selection {
+    background-color: #2b3035;
+    border-color: #495057;
+    color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-dropdown {
+    background-color: #2b3035;
+    border-color: #495057;
+}
+
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-search__field {
+    background-color: #212529;
+    border-color: #495057;
+    color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-results__option {
+    color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-results__option--highlighted {
+    background-color: #0d6efd;
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-results__option--selected {
+    background-color: #3d4349;
+}
+
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+    background-color: #3d4349;
+    border-color: #495057;
+    color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-selection__rendered {
+    color: #dee2e6 !important;
+}
+
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-selection__placeholder {
+    color: #adb5bd !important;
+}
+
+[data-bs-theme="dark"] .select2-container--bootstrap-5 .select2-selection__arrow b {
+    border-color: #dee2e6 transparent transparent transparent !important;
+}
+
+[data-bs-theme="dark"] input[readonly],
+[data-bs-theme="dark"] textarea[readonly] {
+    background-color: #343a40;
+    color: #adb5bd;
+    border-color: #495057;
 }
