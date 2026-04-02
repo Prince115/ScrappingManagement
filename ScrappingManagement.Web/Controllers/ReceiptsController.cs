@@ -83,9 +83,11 @@ namespace ScrappingManagement.Web.Controllers
 			};
 
 			return View(vm);
-		}
 
-		public async Task<IActionResult> Create()
+
+        }
+
+        public async Task<IActionResult> Create()
 		{
 			ViewBag.Invoices = await _context.Invoices
 			    .Include(i => i.Customer)

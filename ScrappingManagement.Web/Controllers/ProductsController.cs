@@ -34,6 +34,7 @@ namespace ScrappingManagement.Web.Controllers
             ViewData["CurrentPageSize"] = currentPageSize;
 
             return View(await PaginatedList<Product>.CreateAsync(products.AsNoTracking(), pageNumber ?? 1, currentPageSize));
+
         }
 
         // GET: Products/Details/5

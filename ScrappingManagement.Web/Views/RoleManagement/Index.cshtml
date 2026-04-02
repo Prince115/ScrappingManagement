@@ -1,0 +1,41 @@
+﻿@using ScrappingManagement.Web.Dto
+@model List<RoleManagementListDto>
+@{
+    ViewData["Title"] = "User Wise Roles";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Role Management</h2>
+    @* <p class="mb-0">
+        <a asp-action="Create" class="btn btn-primary">Create New</a>
+    </p> *@
+</div>
+
+@if (TempData["Message"] != null)
+{
+    <div class="py-2 alert @TempData["MessageState"]">
+        @TempData["Message"]
+    </div>
+}
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>User Name</th>
+            <th>Roles</th>
+            <th class="text-center">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.OrderBy(x=>x.UserName))
+        {
+            <tr>
+                <td>@item.UserName</td>
+                <td>@item.Roles</td>
+                <td class="text-center">
+                    <a asp-action="Edit" asp-route-id="@item.UserId" class="btn btn-sm btn-outline-primary">Edit</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

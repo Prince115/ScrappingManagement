@@ -16,24 +16,28 @@ namespace ScrappingManagement.Web.Controllers
 		}
 
 		// GET: suppliers
-		public async Task<IActionResult> Index()
+		public async Task<IActionResult> Index(int? pageNumber, int? pageSize)
 		{
-			var suppliersWithDueAmount = await _context.Suppliers.AsNoTracking()
-			    .Select(s => new SupplierListDto
-			    {
-				    Id = s.Id,
-				    Name = s.Name,
-				    Location = s.Location,
-				    DueAmount = _context.Quotes
+            int currentPageSize = pageSize ?? 20;
+
+			var suppliersWithDueAmount = _context.Suppliers.AsNoTracking()
+				.Select(s => new SupplierListDto
+				{
+					Id = s.Id,
+					Name = s.Name,
+					Location = s.Location,
+					DueAmount = _context.Quotes
 								   .Where(q => q.SupplierId == s.Id).AsNoTracking()
 								   .Sum(q => (decimal?)q.FinalTotal ?? 0) // Total Quotes
 							- _context.Payments
 								   .Where(p => p.SupplierId == s.Id).AsNoTracking()
 								   .Sum(p => (decimal?)p.Amount ?? 0) // Total Payments
-			    })
-			    .ToListAsync();
+				}).AsQueryable();
 
-			return View(suppliersWithDueAmount);
+            ViewData["CurrentPageSize"] = currentPageSize;
+
+
+            return View(await PaginatedList<SupplierListDto>.CreateAsync(suppliersWithDueAmount, pageNumber ?? 1, currentPageSize));
 		}
 
 		// GET: suppliers/Details/5

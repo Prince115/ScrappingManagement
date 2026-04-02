@@ -1,41 +1,104 @@
-﻿@using ScrappingManagement.Web.Dto
-@model List<CustomerListDto>
+﻿@model ScrappingManagement.Web.Dto.PaginatedList<ScrappingManagement.Web.Dto.CustomerListDto>
+
 @{
-    ViewData["Title"] = "Customers";
+	ViewData["Title"] = "Customers";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Customers</h2>
-    <p class="mb-0">
-        <a asp-action="Create" class="btn btn-primary">Create New</a>
-    </p>
+	<h2>Customers</h2>
+	<p class="mb-0">
+		<a asp-action="Create" class="btn btn-primary">Create New</a>
+	</p>
 </div>
 
 <table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-            <th>Location</th>
-            <th>Due</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var customer in Model)
-        {
-            <tr>
-                <td>@customer.Id</td>
-                <td>@customer.Name</td>
-                <td>@customer.Location</td>
-                <td>
-                    @Html.DisplayFor(modelItem => customer.DueAmount)
-                </td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@customer.Id" class="btn btn-sm btn-warning">Edit</a>
-                    <a asp-action="Delete" asp-route-id="@customer.Id" class="btn btn-sm btn-danger">Delete</a>
-                </td>
-            </tr>
-        }
-    </tbody>
+	<thead>
+		<tr>
+			<th>Id</th>
+			<th>Name</th>
+			<th>Location</th>
+			<th>Due</th>
+			<th>Actions</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var customer in Model)
+		{
+			<tr>
+				<td>@customer.Id</td>
+				<td>@customer.Name</td>
+				<td>@customer.Location</td>
+				<td>
+					@Html.DisplayFor(modelItem => customer.DueAmount)
+				</td>
+				<td>
+					<a asp-action="Edit" asp-route-id="@customer.Id" class="btn btn-sm btn-outline-primary">Edit</a> |
+					<a asp-action="Delete" asp-route-id="@customer.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+				</td>
+			</tr>
+		}
+	</tbody>
 </table>
+
+@{
+	var prevDisabled = !Model.HasPreviousPage ? "disabled" : "";
+	var nextDisabled = !Model.HasNextPage ? "disabled" : "";
+	var currentPageSize = ViewData["CurrentPageSize"];
+	int current = Model.PageIndex;
+	int total = Model.TotalPages;
+	var pagesSet = new System.Collections.Generic.SortedSet<int>();
+	for (int i = 1; i <= Math.Min(3, total); i++) pagesSet.Add(i);
+	for (int i = Math.Max(1, current - 2); i <= Math.Min(total, current + 2); i++) pagesSet.Add(i);
+	for (int i = Math.Max(1, total - 2); i <= total; i++) pagesSet.Add(i);
+	var pageList = pagesSet.ToList();
+}
+<div class="d-flex justify-content-center mt-3">
+	<nav aria-label="Quotes pagination">
+		<ul class="pagination">
+			<li class="page-item @(current <= 1 ? "disabled" : "")">
+				<a class="page-link"
+				   asp-action="Index"
+				   asp-route-pageNumber="@(current - 1)"
+				   asp-route-pageSize="@currentPageSize">Previous</a>
+			</li>
+
+			@{
+				for (int i = 0; i < pageList.Count; i++)
+				{
+					var p = pageList[i];
+					var isActive = p == current;
+					<li class="page-item @(isActive ? "active" : "")">
+						<a class="page-link"
+						   asp-action="Index"
+						   asp-route-pageNumber="@p"
+						   asp-route-pageSize="@currentPageSize">@p</a>
+					</li>
+					;
+
+					if (i < pageList.Count - 1 && pageList[i + 1] > p + 1)
+					{
+						<li class="page-item disabled"><span class="page-link">…</span></li>
+						;
+					}
+				}
+			}
+
+			<li class="page-item @(current >= total ? "disabled" : "")">
+				<a class="page-link"
+				   asp-action="Index"
+				   asp-route-pageNumber="@(current + 1)"
+				   asp-route-pageSize="@currentPageSize">Next</a>
+			</li>
+
+			<li class="page-item d-flex align-items-center ms-3">
+				<label for="pageSize" class="form-label mb-0 me-2">Show:</label>
+				<select name="pageSize" id="pageSize" class="form-select form-select-sm auto-submit" style="width: auto;">
+					<option value="5" selected="@(ViewData["CurrentPageSize"]?.ToString() == "5")">5</option>
+					<option value="10" selected="@(ViewData["CurrentPageSize"]?.ToString() == "10")">10</option>
+					<option value="20" selected="@(ViewData["CurrentPageSize"]?.ToString() == "20")">20</option>
+					<option value="50" selected="@(ViewData["CurrentPageSize"]?.ToString() == "50")">50</option>
+				</select>
+			</li>
+		</ul>
+	</nav>
+</div>

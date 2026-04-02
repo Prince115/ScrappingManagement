@@ -8,85 +8,89 @@ namespace ScrappingManagement.Web.Controllers;
 
 public class CustomersController(AppDbContext context) : Controller
 {
-	private readonly AppDbContext _context = context;
+    private readonly AppDbContext _context = context;
 
-    public async Task<IActionResult> Index()
-	{
-		var customers = await _context.Customers.AsNoTracking()
-			    .Select(s => new CustomerListDto
-			    {
-				    Id = s.Id,
-				    Name = s.Name,
-				    Location = s.Location,
-				    DueAmount = (s.OpeningBalance ?? 0) 
-							+ _context.Invoices
-								   .Where(q => q.CustomerId == s.Id).AsNoTracking()
-								   .Sum(q => (decimal?)q.FinalAmount ?? 0)
-							- _context.Receipts
-								   .Where(p => p.CustomerId == s.Id).AsNoTracking()
-								   .Sum(p => (decimal?)p.Amount ?? 0)
-			    })
-			    .ToListAsync();
-		return View(customers);
-	}
+    public async Task<IActionResult> Index(int? pageNumber, int? pageSize)
+    {
+        int currentPageSize = pageSize ?? 20;
 
-	public IActionResult Create()
-	{
-		return View();
-	}
+        var customers = _context.Customers.AsNoTracking()
+                .Select(s => new CustomerListDto
+                {
+                    Id = s.Id,
+                    Name = s.Name,
+                    Location = s.Location,
+                    DueAmount = (s.OpeningBalance ?? 0)
+                            + _context.Invoices
+                                   .Where(q => q.CustomerId == s.Id).AsNoTracking()
+                                   .Sum(q => (decimal?)q.FinalAmount ?? 0)
+                            - _context.Receipts
+                                   .Where(p => p.CustomerId == s.Id).AsNoTracking()
+                                   .Sum(p => (decimal?)p.Amount ?? 0)
+                });
 
-	[HttpPost]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> Create(Customer customer)
-	{
-		if (ModelState.IsValid)
-		{
-			_context.Customers.Add(customer);
-			await _context.SaveChangesAsync();
-			return RedirectToAction(nameof(Index));
-		}
+        ViewData["CurrentPageSize"] = currentPageSize;
 
-		return View(customer);
-	}
+        return View(await PaginatedList<CustomerListDto>.CreateAsync(customers, pageNumber ?? 1, currentPageSize));
+    }
 
-	public async Task<IActionResult> Edit(int id)
-	{
-		var customer = await _context.Customers.FindAsync(id);
-		if (customer == null) return NotFound();
-		return View(customer);
-	}
+    public IActionResult Create()
+    {
+        return View();
+    }
 
-	[HttpPost]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> Edit(int id, Customer customer)
-	{
-		if (id != customer.Id) return NotFound();
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Create(Customer customer)
+    {
+        if (ModelState.IsValid)
+        {
+            _context.Customers.Add(customer);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
 
-		if (ModelState.IsValid)
-		{
-			_context.Update(customer);
-			await _context.SaveChangesAsync();
-			return RedirectToAction(nameof(Index));
-		}
+        return View(customer);
+    }
 
-		return View(customer);
-	}
+    public async Task<IActionResult> Edit(int id)
+    {
+        var customer = await _context.Customers.FindAsync(id);
+        if (customer == null) return NotFound();
+        return View(customer);
+    }
 
-	public async Task<IActionResult> Delete(int id)
-	{
-		var customer = await _context.Customers.FindAsync(id);
-		if (customer == null) return NotFound();
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, Customer customer)
+    {
+        if (id != customer.Id) return NotFound();
 
-		return View(customer);
-	}
+        if (ModelState.IsValid)
+        {
+            _context.Update(customer);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
+        }
 
-	[HttpPost, ActionName("Delete")]
-	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> DeleteConfirmed(int id)
-	{
-		var customer = await _context.Customers.FindAsync(id);
-		_context.Customers.Remove(customer);
-		await _context.SaveChangesAsync();
-		return RedirectToAction(nameof(Index));
-	}
+        return View(customer);
+    }
+
+    public async Task<IActionResult> Delete(int id)
+    {
+        var customer = await _context.Customers.FindAsync(id);
+        if (customer == null) return NotFound();
+
+        return View(customer);
+    }
+
+    [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var customer = await _context.Customers.FindAsync(id);
+        _context.Customers.Remove(customer);
+        await _context.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
+    }
 }

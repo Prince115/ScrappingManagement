@@ -9,7 +9,7 @@ using ScrappingManagement.Web.Models;
 
 namespace ScrappingManagement.Web.Controllers
 {
-	[Authorize(Roles = "Admin,User")]
+	[Authorize(Roles = "Admin,User,QuotesUser")]
 	public class QuotesController : Controller
 	{
 		private readonly ILogger<QuotesController> _logger;
