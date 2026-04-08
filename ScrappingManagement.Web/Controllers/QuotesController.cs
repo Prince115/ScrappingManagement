@@ -82,7 +82,7 @@ namespace ScrappingManagement.Web.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Create([Bind("Date,Location,SupplierId,Total,FinalTotal,Kato,Note,Status,BillNumber")] Quote quote, List<QuoteProduct> quoteProducts)
+		public async Task<IActionResult> Create([Bind("Date,Location,SupplierId,Total,FinalTotal,Kato,Note,Status,BillNumber,PaymentAmount")] Quote quote, List<QuoteProduct> quoteProducts)
 		{
 			if (ModelState.IsValid)
 			{
@@ -94,17 +94,35 @@ namespace ScrappingManagement.Web.Controllers
 				}
 				quote.BillNumber = nextBillNumberInt.ToString();
 				quote.QuoteProducts = quoteProducts;
-				_context.Quotes.Add(quote);
-				if (quote.Status == QuoteStatus.Completed)
+                _context.Quotes.Add(quote);
+
+                // If the quote is not completed and there is an initial payment amount, create a payment record for it
+                if (quote.Status != QuoteStatus.Completed && quote.PaymentAmount > 0)
+                {
+                    _context.Payments.Add(new Payment
+                    {
+                        Amount = (decimal)quote.PaymentAmount,
+                        Date = DateOnly.FromDateTime(DateTime.UtcNow.ToIndianTime()),
+                        SupplierId = quote.SupplierId,
+                        PaymentMode = PaymentMode.Cash,
+                        Description = "Initial Payment",
+                        Quote = quote
+                    });
+                }
+
+                if (quote.Status == QuoteStatus.Completed)
 				{
-					_context.Payments.Add(new Payment
+					var vRemainingAmount = quote.FinalTotal - (quote.PaymentAmount ?? 0);
+
+                    _context.Payments.Add(new Payment
 					{
-						Amount = quote.FinalTotal,
+						Amount = vRemainingAmount,
 						Date = DateOnly.FromDateTime(DateTime.UtcNow.ToIndianTime()),
 						SupplierId = quote.SupplierId,
 						PaymentMode = PaymentMode.Cash,
-						Description = "Auto Created"
-					});
+						Description = "Auto Created",
+                        Quote = quote
+                    });
 				}
 				await _context.SaveChangesAsync();
 				return RedirectToAction(nameof(Index));
@@ -133,15 +151,19 @@ namespace ScrappingManagement.Web.Controllers
 				if (Enum.TryParse<QuoteStatus>(dto.Status, out var parsedStatus))
 				{
 					quote.Status = parsedStatus;
-					if (parsedStatus == QuoteStatus.Completed)
+
+                    // If the status is updated to Completed, create a payment record for the remaining amount
+                    if (parsedStatus == QuoteStatus.Completed)
 					{
-						_context.Payments.Add(new Payment
+                        var vRemainingAmount = quote.FinalTotal - (quote.PaymentAmount ?? 0);
+                        _context.Payments.Add(new Payment
 						{
-							Amount = quote.FinalTotal,
+							Amount = vRemainingAmount,
 							Date = DateOnly.FromDateTime(DateTime.UtcNow.ToIndianTime()),
 							SupplierId = quote.SupplierId,
 							PaymentMode = PaymentMode.Cash,
-							Description = "Auto Created"
+							Description = "Auto Created",
+							QuoteID = quote.Id,
 						});
 					}
 					_context.SaveChanges();
@@ -229,7 +251,7 @@ namespace ScrappingManagement.Web.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Location,SupplierId,Total,FinalTotal,Note,Kato,Status")] Quote quote, List<QuoteProduct> quoteProducts)
+		public async Task<IActionResult> Edit(int id, [Bind("Id,Date,Location,SupplierId,Total,FinalTotal,Note,Kato,Status,PaymentAmount")] Quote quote, List<QuoteProduct> quoteProducts)
 		{
 			if (id != quote.Id)
 			{
@@ -256,8 +278,32 @@ namespace ScrappingManagement.Web.Controllers
 					existingQuote.Kato = quote.Kato;
 					existingQuote.Total = quote.Total;
 					existingQuote.Note = quote.Note;
+					existingQuote.PaymentAmount = quote.PaymentAmount;
 
-					foreach (var product in quoteProducts)
+                    // If the quote is not completed and there is an initial payment amount, create or update a payment record for it
+                    if (quote.Status != QuoteStatus.Completed && quote.PaymentAmount > 0)
+                    {
+                        var existingPayment = await _context.Payments.FirstOrDefaultAsync(p => p.QuoteID == id);
+
+                        if (existingPayment == null)
+                        {
+                            await _context.Payments.AddAsync(new Payment
+                            {
+                                Amount = (decimal)quote.PaymentAmount,
+                                Date = DateOnly.FromDateTime(DateTime.UtcNow.ToIndianTime()),
+                                SupplierId = quote.SupplierId,
+                                PaymentMode = PaymentMode.Cash,
+                                Description = "Initial Payment",
+                                QuoteID = id
+                            });
+                        }
+                        else
+                        {
+                            existingPayment.Amount = (decimal)quote.PaymentAmount;
+                        }
+                    }
+
+                    foreach (var product in quoteProducts)
 					{
 						if (product.Id == 0 && product.Deleted == 0)
 						{

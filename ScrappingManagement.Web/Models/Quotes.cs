@@ -19,8 +19,13 @@ public class Quote
 
 	public decimal Total { get; set; }
 	public decimal FinalTotal { get; set; }
+
 	[Column("kato")]
 	public decimal Kato { get; set; }
 	public string? Note { get; set; }
-	public QuoteStatus Status { get; set; } = QuoteStatus.ReportPending;
+    public QuoteStatus Status { get; set; } = QuoteStatus.ReportPending;
+
+    [Column("paymentamount")]
+    public decimal? PaymentAmount { get; set; }
+
 }

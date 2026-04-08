@@ -21,5 +21,11 @@ namespace ScrappingManagement.Web.Models
 
         [Required]
         public DateOnly Date { get; set; }
+
+        [Column("quoteid")]
+        [ForeignKey(nameof(Quote))]
+        public int? QuoteID { get; set; }
+
+        public Quote Quote { get; set; }
     }
 }
